@@ -8,14 +8,13 @@
 class   Location
 {
     public:
-        bool                        autoindex;
-        std::string                 root;
-        std::string                 index;
-        std::string                 upload;
-        std::string                 cgi;
-        std::pair<int, std::string> redirect;
-        std::set<std::string>       acceptedMethods;
+        bool                            autoindex;
+        std::string                     root;
+        std::string                     index;
+        std::string                     upload;
+        std::string                     cgi;
+        std::pair<int, std::string>     redirect;
+        std::set<std::string>           acceptedMethods;
 
-    // public:
 };
 

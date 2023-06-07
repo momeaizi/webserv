@@ -4,7 +4,7 @@
 #include <map>
 #include <set>
 
-class   Context
+class   Server
 {
     public:
         std::pair<std::string, std::string>                     serverAddress;
