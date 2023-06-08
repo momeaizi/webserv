@@ -12,10 +12,10 @@ class   Server
         std::string                                             host;
         std::string                                             port;
         std::map<int, std::string>                              errorPages;
-        unsigned int                                            clientMaxBodySize;
-        std::map<std::string, std::map<std::string, Location> > host_loc;
+        long                                                    clientMaxBodySize;
         std::set<std::string>                                   allowedMethods;
         std::pair<int, std::string>                             redirection;
+        std::map<std::string, Location>                         locations;
 
 
         int         create_socket();
