@@ -9,7 +9,7 @@
 
 
 
-int main()
+void    testParsing()
 {
     try
     {
@@ -44,6 +44,7 @@ int main()
                 for (; itt != it->second.cgi.end(); ++itt)
                     std::cout << '\t' << itt->first << " " << itt->second << std::endl;
             }
+            std::cout << "-----------------------------------------------------" << std::endl;
         }
         
     }
@@ -51,7 +52,48 @@ int main()
     {
         std::cerr << e << '\n';
     }
+    catch(std::string e)
+    {
+        std::cerr << e << '\n';
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+int main()
+{
+    // testParsing();
+    ContextManager  contextManager("serv.conf");
+    std::vector<Server> &server = contextManager.servers;
+
+
+    FD_ZERO(&master);
+
+    for (int i = 0 ; i < server.size(); ++i)
+    {
+        server[i].createSocket();
+    }
+
+    for (int i = 0 ; i < server.size(); ++i)
+    {
+        server[i].startListening();
+    }
     
+
 
     return 0;
 }

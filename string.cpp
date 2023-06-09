@@ -7,6 +7,9 @@ std::string trimString(const std::string &str)
     std::string::const_iterator     start = str.begin();
     std::string::const_iterator     end = str.end();
 
+    while (start != end && std::isspace(*start))
+        ++start;
+
     do
         --end;
     while (end != start && std::isspace(*end));
