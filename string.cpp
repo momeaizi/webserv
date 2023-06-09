@@ -1,6 +1,16 @@
 #include <string>
 #include <vector>
 
+bool containsOnlyWhitespaces(const std::string& str)
+{
+
+    for (size_t i = 0; i < str.length(); ++i)
+        if (!std::isspace(str[i]))
+            return false;
+    return true;
+}
+
+
 std::string trimString(const std::string &str)
 {
 

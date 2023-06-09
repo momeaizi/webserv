@@ -21,8 +21,9 @@
 #include "Location.hpp"
 
 
-fd_set          master;
-int             max_socket = 0;
+
+extern fd_set          master;
+extern int             max_socket;
 
 class   Server
 {

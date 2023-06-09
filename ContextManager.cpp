@@ -19,7 +19,7 @@ void    ContextManager::parseLocation(Location &location)
     {
         std::getline(configFIle, buff);
 
-        if (!buff.length())
+        if (!buff.length() || containsOnlyWhitespaces(buff))
             continue ;
 
         tokens = splitString(buff, ' ');
@@ -60,7 +60,7 @@ void    ContextManager::parseLocation(Location &location)
         {
             if (tokens.size() < 2)
                 throw "wrong nummber of arguments";
-            for (int  i = 1; i < tokens.size(); ++i)
+            for (size_t  i = 1; i < tokens.size(); ++i)
                 location.allowedMethods.insert(tokens[i]);
         }
         else if (tokens[0] == "\t\treturn")
@@ -82,7 +82,7 @@ void    ContextManager::parseConfigFIle()
     {
         std::getline(configFIle, buff);
 
-        if (!buff.length())
+        if (!buff.length() || containsOnlyWhitespaces(buff))
             continue ;
 
 
