@@ -19,6 +19,7 @@ bool                        containsOnlyWhitespaces(const std::string& str);
 class   ContextManager
 {
     public:
+        unsigned int                lineNumber;
         std::string                 buff;
         std::vector<std::string>    tokens;
         std::ifstream               configFIle;
@@ -28,7 +29,8 @@ class   ContextManager
         ContextManager(const char *configFileName);
 
         void    parseConfigFIle();
-        void    parseLocation(Location &location);
+        int     parseServer();
+        int     parseLocation(Location &location);
 
 };
 

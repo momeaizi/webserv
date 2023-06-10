@@ -1,8 +1,11 @@
 {
     "files.associations": {
+<<<<<<< HEAD
         "*.tmp": "c",
         "string": "cpp",
         "iostream": "cpp",
+=======
+>>>>>>> 9ad947ccbd87b8b5caeed54dcce1da139d9e9812
         "__bit_reference": "cpp",
         "__config": "cpp",
         "__debug": "cpp",
@@ -44,6 +47,10 @@
         "iomanip": "cpp",
         "ios": "cpp",
         "iosfwd": "cpp",
+<<<<<<< HEAD
+=======
+        "iostream": "cpp",
+>>>>>>> 9ad947ccbd87b8b5caeed54dcce1da139d9e9812
         "istream": "cpp",
         "iterator": "cpp",
         "limits": "cpp",
@@ -60,6 +67,10 @@
         "stack": "cpp",
         "stdexcept": "cpp",
         "streambuf": "cpp",
+<<<<<<< HEAD
+=======
+        "string": "cpp",
+>>>>>>> 9ad947ccbd87b8b5caeed54dcce1da139d9e9812
         "string_view": "cpp",
         "system_error": "cpp",
         "tuple": "cpp",
