@@ -18,9 +18,10 @@ class Client
         Location                            *location;
     
     // member func
+    Client():methodType(""), phase(1){}
     void parse();
 
 
-}
+};
 
 #endif
