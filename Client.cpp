@@ -21,12 +21,12 @@ std::vector<std::string> getline(int phase)
 
     while (loc != -1)
     {
-            loc = str.find("\r\n");
-            lines.push_back(std::string(str, loc));
-            str.erase(0, loc);
-            // str = std::string(str.ptr + loc + 2, str.size() - loc);
-            if (lines.back() == "")
-                break ;
+        loc = str.find("\r\n");
+        lines.push_back(std::string(str, loc));
+        str.erase(0, loc);
+        // str = std::string(str.ptr + loc + 2, str.size() - loc);
+        if (lines.back() == "")
+            break ;
     }
     return lines;
 }
@@ -55,7 +55,6 @@ void Client::parse()
         str = *it;
         if (str == "")
         {
-
             buffer = getline(1)[0];
             phase = 0; // request is finished
             return ;

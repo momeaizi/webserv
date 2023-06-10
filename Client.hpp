@@ -1,5 +1,5 @@
 # ifndef CLIENT_HPP
-# define CLIENT_HPP
+#define CLIENT_HPP
 
 #include "Location.hpp"
 // #include <vector>
@@ -21,6 +21,6 @@ class Client
     void parse();
 
 
-}
+};
 
 #endif
