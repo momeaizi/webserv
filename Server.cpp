@@ -53,3 +53,67 @@ void         Server::startListening()
         throw "listen() failed." + std::to_string(errno);
 }
 
+void         Server::clear()
+{
+
+    host.clear();
+    socket_listen = -1;
+    port.clear();
+    hostName.clear();
+    hosts.clear();
+}
+
+
+Server  &Server::operator+= (const Server& serv)
+{
+    std::pair<std::string, Host>    val = 
+                                    make_pair(serv.hosts.begin()->first, serv.hosts.begin()->second);
+    hosts.insert(val);
+    return *this;
+}
+
+
+Server::Server()
+{
+    clear();
+}
+
+Server::Server(const Server &serv)
+{
+    clear();
+    hosts = serv.hosts;
+    socket_listen = serv.socket_listen;
+    port = serv.port;
+    hostName = serv.hostName;
+}
+
+Server::~Server()
+{
+    clear();
+}
+
+
+
+Host::Host()
+{
+    clear();
+}
+
+Host::Host(const Host &host)
+{
+    errorPages = host.errorPages;
+    clientMaxBodySize = host.clientMaxBodySize;
+    allowedMethods = host.allowedMethods;
+    redirection = host.redirection;
+    locations = host.locations;
+}
+
+void    Host::clear()
+{
+    errorPages.clear();
+    allowedMethods.clear();
+    locations.clear();
+    redirection.first = 0;
+    redirection.second.clear();
+    clientMaxBodySize = 0;
+}

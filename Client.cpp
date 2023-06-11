@@ -125,7 +125,7 @@ void Client::parse()
             if (this->headerFields.count(name) and index == -1)
                 return ;// send_400();
             std::string   val = str.substr(index + 1, len);
-            headerFields [name] = trim(val, " ");
+            headerFields [name] = trimString(val);
         }
     }
 }

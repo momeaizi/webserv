@@ -19,11 +19,12 @@ bool                        containsOnlyWhitespaces(const std::string& str);
 class   ContextManager
 {
     public:
-        unsigned int                lineNumber;
-        std::string                 buff;
-        std::vector<std::string>    tokens;
-        std::ifstream               configFIle;
-        std::vector<Server>         servers;
+        unsigned int                        lineNumber;
+        std::string                         buff;
+        std::vector<std::string>            tokens;
+        std::ifstream                       configFIle;
+        std::vector<Server>                 servers;
+        std::map<std::string, unsigned int> portServer;
 
 
         ContextManager(const char *configFileName);
