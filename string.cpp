@@ -10,21 +10,25 @@ bool containsOnlyWhitespaces(const std::string& str)
     return true;
 }
 
+std::string trim(const std::string& str, const std::string t)
+{
+    size_t first = str.find_first_not_of(t);
+
+    if (first == std::string::npos)
+        return "";
+    size_t last = str.find_last_not_of(t);
+    return str.substr(first, (last - first + 1));
+}
 
 std::string trimString(const std::string &str)
 {
 
-    std::string::const_iterator     start = str.begin();
-    std::string::const_iterator     end = str.end();
+    size_t first = str.find_first_not_of(t);
 
-    while (start != end && std::isspace(*start))
-        ++start;
-
-    do
-        --end;
-    while (end != start && std::isspace(*end));
-
-    return std::string(start, end + 1);
+    if (first == std::string::npos)
+        return "";
+    size_t last = str.find_last_not_of(t);
+    return str.substr(first, (last - first + 1));
 }
 
 

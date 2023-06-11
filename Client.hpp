@@ -3,7 +3,7 @@
 
 #include "Location.hpp"
 // #include <vector>
-
+std::string trim(const std::string& str, const std::string t);
 class Client
 {
     public:

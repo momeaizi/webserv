@@ -80,13 +80,10 @@ void IsUriValid(std::string str)
             send_400(); 
 }
 
-std::string trim(const std::string& str, const std::string t)
+
+std::string getRemainder()
 {
-    size_t first = str.find_first_not_of(t);
-    if (first == std::string::npos)
-        return "";
-    size_t last = str.find_last_not_of(t);
-    return str.substr(first, (last - first + 1));
+    return getlines(1)[0];
 }
 
 void Client::parse()
@@ -106,7 +103,7 @@ void Client::parse()
     std::cout << str << std::endl;
         if (str == "")
         {
-            buffer = getlines(1)[0];
+            buffer = getRemainder();
             phase = 0; // request is finished
             return ;
         }

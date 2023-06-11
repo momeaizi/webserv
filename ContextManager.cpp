@@ -88,8 +88,12 @@ int    ContextManager::parseLocation(Location &location)
 int     ContextManager::parseServer()
 {
     if (buff == "server")
+    {
         servers.push_back(Server());
-    else if (!servers.size())
+        return 1;
+    }
+    
+    if (!servers.size())
         throw "unknown directive in serv.conf:" + std::to_string(lineNumber);
     else if (tokens[0] == "\tlocation")
     {
