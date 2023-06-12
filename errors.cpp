@@ -86,12 +86,6 @@ void send_414()
     exit(0);
 }
 
-void send_405()
-{
-    std::cout << "error  405 Method Not Allowed!!!" << std::endl;
-    exit(0);
-}
-
 void send_500()
 {
     std::cout << "error  500 Internal Server Error!!!" << std::endl;

@@ -18,6 +18,10 @@ class   Location
         std::pair<int, std::string>         redirection;
         std::map<std::string, std::string>  cgi;
         std::set<std::string>               allowedMethods;
+    // 
+    std::string GetUpload() {return this->upload;}
+    std::string GetIndex() {return this->index;}
+    bool LocationHasCgi() {return cgi.size();}
 
 };
 

@@ -1,8 +1,17 @@
 # ifndef CLIENT_HPP
-#define CLIENT_HPP
+# define CLIENT_HPP
+# include "Location.hpp"
+# include "string.hpp"
+# include "errors.hpp"
+# include <sys/socket.h>
+# include <fstream> // remove
+# include <filesystem> // remove
+# include <string>
+# include <iostream>
 
-#include "Location.hpp"
-// #include <vector>
+# define MAX 2043
+
+
 std::string     trimString(const std::string &str);
 class Client
 {
@@ -18,10 +27,10 @@ class Client
         Location                            *location;
     
     // member func
-    Client():methodType(""), phase(1){}
-    void parse();
-
-
+    Client():phase(1), methodType(""){}
+    void    parse();
+    void    uploadFile();
+    void    PostHandler();
 };
 
 #endif

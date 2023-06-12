@@ -1,6 +1,5 @@
 #include "string.hpp"
 
-
 bool containsOnlyWhitespaces(const std::string& str)
 {
 
@@ -30,7 +29,7 @@ std::vector<std::string> getlines(int phase)
     char                      buffer[1024];
     std::size_t               loc = 0;
     int                       bytes;
-    int                       fd;
+    // int                       fd;
 
     if (phase)
     {

@@ -1,22 +1,13 @@
 #include "Client.hpp"
-#include "string.hpp"
-#include "errors.hpp"
-#include <sys/socket.h>
-#include <fstream> // remove
-#include <string>
-#include <iostream>
 
-
-#define MAX 2043
-
-
+namespace fs = std::__fs::filesystem; // remove
 
 
 void IsUriValid(std::string str)
 {
     const std::string allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~!$&'()*+,;=:@/?#[]";
-    for(int i = 0; i < str.size(); i++)
-        if (allowed.find(str[i]) == -1)
+    for(size_t i = 0; i < str.size(); i++)
+        if (allowed.find(str[i]) ==std::string::npos)
             send_400(); 
 }
 
@@ -29,6 +20,28 @@ void IsMethodValid(std::string method)
     if (!allmethods.count(method)) send_405(); 
 }
 
+bool hasSlash(std::string resource)
+{
+    int index;
+
+    index = resource.length() - 1;
+    return (resource[index] == '/');
+}
+
+bool hasIndex(std::string index)
+{
+    return (index == "");
+}
+
+void runCGI()
+{
+
+}
+
+void Client::uploadFile()
+{
+
+}
 
 void Client::parse()
 {
@@ -79,16 +92,37 @@ void Client::parse()
     }
 }
 
-void PostMetod()
+void Client::PostHandler()
 {
-
+    if (location->GetUpload() != "")
+    {
+        uploadFile();
+        send_201();
+    }
+    if (!fs::exists(resources))
+        send_404();
+    if (fs::is_directory(resources)) // create func
+    {
+        if (!hasSlash(resources))
+            send_301();
+        std::string filePath = resources;
+        if(hasIndex(location->index))
+                filePath += location->GetIndex();
+        else
+                filePath += "index.html";
+        if (!fs::is_regular_file(filePath))
+            send_403();
+        resources = filePath;
+    }
+    if (!location->LocationHasCgi())
+        send_403();
+    runCGI();
 }
 
 
 int main()
 {
     Client obj;
-    int i = 0;
     while (obj.phase)
         obj.parse();
     std:: cout << std::endl << "RESPONS" << std::endl;
