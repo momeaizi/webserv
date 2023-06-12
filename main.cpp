@@ -18,35 +18,49 @@ void    testParsing()
         ContextManager  manager("serv.conf"); 
         std::vector<Server> servers = manager.servers;
 
+        std::cout << servers.size() << std::endl;
         for (size_t i = 0; i < servers.size(); ++i)
         {
-            std::cout << "host " << servers[i].host << std::endl;
+            std::cout << "host " << servers[i].hostName << std::endl;
             std::cout << "port " << servers[i].port << std::endl;
-            std::cout << "clientMaxBodySize " << servers[i].clientMaxBodySize << std::endl;
-
-            std::map<std::string, Location>::iterator it = servers[i].locations.begin();
-
-            for (; it != servers[i].locations.end(); ++it)
+            std::cout << "size : " << servers[i].hosts.size() << std::endl;
+            std::map<std::string, Host>::iterator it = servers[i].hosts.begin();
+            for (; it != servers[i].hosts.end(); ++it)
             {
-                std::cout << "location " << it->first << std::endl;
-                std::cout << "\tautoindex " << it->second.autoindex << std::endl;
-                std::cout << "\troot " << it->second.root << std::endl;
-                std::cout << "\tindex " << it->second.index << std::endl;
-                std::cout << "\tupload " << it->second.upload << std::endl;
-                std::cout << "\tredirection " << it->second.redirection.first << ", " << it->second.redirection.first << std::endl;
-                std::cout << "\tallowed methods " << std::endl;
+                std::cout << "Host host " << it->first << std::endl;
+                std::cout << "clientMaxBodySize " << it->second.clientMaxBodySize << std::endl;
 
-                std::set<std::string>::iterator it_ = it->second.allowedMethods.begin();
-                for (; it_ != it->second.allowedMethods.end(); ++it_)
-                    std::cout << "\t\t" << *it_ << std::endl;
+                std::map<std::string, Location>::iterator it_ = it->second.locations.begin();
 
-                
-                std::cout << "\tCGI" << std::endl;
-                std::map<std::string, std::string>::iterator itt = it->second.cgi.begin();
-                for (; itt != it->second.cgi.end(); ++itt)
-                    std::cout << "\t\t" << itt->first << " " << itt->second << std::endl;
+                for (; it_ != it->second.locations.end(); ++it_)
+                {
+                    std::cout << "location " << it_->first << std::endl;
+                    std::cout << "\tautoindex " << it_->second.autoindex << std::endl;
+                    std::cout << "\troot " << it_->second.root << std::endl;
+                    std::cout << "\tindex " << it_->second.index << std::endl;
+                    std::cout << "\tupload " << it_->second.upload << std::endl;
+                    std::cout << "\tredirection " << it_->second.redirection.first << ", " << it->second.redirection.first << std::endl;
+                    std::cout << "\tallowed methods " << std::endl;
+
+                    std::set<std::string>::iterator it__ = it->second.allowedMethods.begin();
+                    for (; it__ != it->second.allowedMethods.end(); ++it__)
+                        std::cout << "\t\t" << *it__ << std::endl;
+
+                    
+                    std::cout << "\tCGI" << std::endl;
+                    std::map<std::string, std::string>::iterator itt = it_->second.cgi.begin();
+                    for (; itt != it_->second.cgi.end(); ++itt)
+                        std::cout << "\t\t" << itt->first << " " << itt->second << std::endl;
+
+
+                    std::cout << "\tError Pages" << std::endl;
+                    std::map<int, std::string>::iterator it___ = it->second.errorPages.begin();
+                    for (; it___ != it->second.errorPages.end(); ++it___)
+                        std::cout << "\t\t" << it___->first << " " << it___->second << std::endl;
+                }
+                std::cout << "*************************Host-End*********************" << std::endl;
             }
-            std::cout << "-----------------------------------------------------" << std::endl;
+            std::cout << "----------------------------Server-End------------------------------------------------------" << std::endl;
         }
         
     }

@@ -25,23 +25,41 @@
 extern fd_set          master;
 extern int             max_socket;
 
+
+struct Host
+{
+    std::map<int, std::string>                              errorPages;
+    long                                                    clientMaxBodySize;
+    std::set<std::string>                                   allowedMethods;
+    std::pair<int, std::string>                             redirection;
+    std::map<std::string, Location>                         locations;
+
+    Host();
+    Host(const Host &host);
+    void    clear();
+};
+
 class   Server
 {
     public:
+
         int                                                     socket_listen;
-        std::string                                             host;
         std::string                                             port;
-        std::map<int, std::string>                              errorPages;
-        long                                                    clientMaxBodySize;
-        std::set<std::string>                                   allowedMethods;
-        std::pair<int, std::string>                             redirection;
-        std::map<std::string, Location>                         locations;
+        std::string                                             hostName;
+        Host                                                    host;
+        std::map<std::string, Host>                             hosts;
+
+
+        Server();
+        Server(const Server &serv);
+        ~Server();
+
 
 
         void        createSocket();
         void        startListening();
-        // int         accept();
-        // Location    match_location(std::string &uri);
+        void        clear();
+        Server  &operator+= (const Server& serv);
 
 };
 

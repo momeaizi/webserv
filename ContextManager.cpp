@@ -9,6 +9,11 @@ ContextManager::ContextManager(const char *configFileName) : configFIle(configFi
     
     lineNumber = 0;
     parseConfigFIle();
+
+    tokens.clear();
+    buff.clear();
+    configFIle.close();
+    configFIle.clear();
     
 }
 
@@ -87,8 +92,21 @@ int    ContextManager::parseLocation(Location &location)
 
 int     ContextManager::parseServer()
 {
-    if (buff == "server")
+    if (trimString(buff) == "server")
     {
+        if (servers.size())
+            servers.back().hosts[servers.back().hostName] = servers.back().host;
+
+        if (servers.size() > 1 && portServer.count(servers.back().port))
+        {
+            unsigned int    index = portServer[servers.back().port];
+            servers[index] += servers.back();
+            servers.pop_back();
+        }
+        else if (servers.size())
+            portServer[servers.back().port] = servers.size() - 1;
+
+
         servers.push_back(Server());
         return 1;
     }
@@ -100,10 +118,7 @@ int     ContextManager::parseServer()
         if (tokens.size() != 2)
             throw "invalid number of arguments in \"location\" directive in serv.conf:" + std::to_string(lineNumber);
 
-        if (!servers.back().host.length())
-            throw "provide a host first";
-
-        if (!parseLocation(servers.back().locations[tokens[1]]))
+        if (!parseLocation(servers.back().host.locations[tokens[1]]))
             return 0;
         parseServer();
         return 1;
@@ -113,7 +128,7 @@ int     ContextManager::parseServer()
     {
         if (tokens.size() != 2)
             throw "invalid number of arguments in \"host\" directive in serv.conf:" + std::to_string(lineNumber);
-        servers.back().host = tokens[1];
+        servers.back().hostName = tokens[1];
     }
     else if (tokens[0] == "\tport")
     {
@@ -125,13 +140,13 @@ int     ContextManager::parseServer()
     {
         if (tokens.size() != 2)
             throw "invalid number of arguments in \"client_max_body_size\" directive in serv.conf:" + std::to_string(lineNumber);
-        servers.back().clientMaxBodySize = atol(tokens[1].c_str());
+        servers.back().host.clientMaxBodySize = atol(tokens[1].c_str());
     }
     else if (tokens[0] == "\terror_page")
     {
         if (tokens.size() != 3)
             throw "invalid number of arguments in \"error_page\" directive in serv.conf:" + std::to_string(lineNumber);
-        servers.back().errorPages[atoi(tokens[1].c_str())] = tokens[1];
+        servers.back().host.errorPages[atoi(tokens[1].c_str())] = tokens[2];
     }
     else
         throw "unknown directive in serv.conf:" + std::to_string(lineNumber);
@@ -154,5 +169,18 @@ void    ContextManager::parseConfigFIle()
         if (!parseServer())
             return ;
     }
+
+    if (servers.size())
+        servers.back().hosts[servers.back().hostName] = servers.back().host;
+
+
+    if (servers.size() > 1 && portServer.count(servers.back().port))
+    {
+        unsigned int    index = portServer[servers.back().port];
+        servers[index] += servers.back();
+        servers.pop_back();
+    }
+    else
+        portServer[servers.back().port] = servers.size() - 1;
 
 }
