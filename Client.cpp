@@ -1,4 +1,5 @@
 #include "Client.hpp"
+#include "string.hpp"
 #include <sys/socket.h>
 #include <fstream> // remove
 #include <string>
@@ -12,6 +13,12 @@
 void send_414()
 {
     std::cout << "error  414 Request_URI Too Long!!!" << std::endl;
+    exit(0);
+}
+
+void send_405()
+{
+    std::cout << "error  405 Method Not Allowed!!!" << std::endl;
     exit(0);
 }
 
@@ -80,6 +87,14 @@ void IsUriValid(std::string str)
             send_400(); 
 }
 
+void IsMethodValid(std::string method)
+{
+    std::set<std::string> allmethods;
+    allmethods.insert("GET");
+    allmethods.insert("DELETE");
+    allmethods.insert("POSTE");
+    if (!allmethods.count(method)) send_405(); 
+}
 
 std::string getRemainder()
 {
@@ -93,6 +108,7 @@ void Client::parse()
     std::string buffer;
     std::vector<std::string> lines;
     std::vector<std::string>::iterator it;
+    size_t first;
 
     lines = getlines(0);
     if (lines.empty())
@@ -100,7 +116,6 @@ void Client::parse()
     for (it = lines.begin(); it != lines.end(); it++)
     {
         str = *it;
-    std::cout << str << std::endl;
         if (str == "")
         {
             buffer = getRemainder();
@@ -110,10 +125,15 @@ void Client::parse()
         if (this->methodType == "") 
         {
             this->methodType = tok(str, " ");
+            IsMethodValid(methodType);
+            first = str.find_first_not_of(' ');
+            str = str.substr(first);
             URI = tok(str, " ");
             if (URI.size() > MAX)
                 send_414(); // 
             IsUriValid(URI);
+            first = str.find_first_not_of(' ');
+            str = str.substr(first);
             if (tok(str, "\r\n") != "HTTP/1.1")
                 send_505();
         }
