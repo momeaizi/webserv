@@ -3,11 +3,13 @@
 # include "Location.hpp"
 # include "string.hpp"
 # include "errors.hpp"
+# include "filesCont.hpp"
 # include <sys/socket.h>
-# include <fstream> // remove
-# include <filesystem> // remove
+# include <fstream>
+# include <list>
 # include <string>
 # include <iostream>
+#include <ctime>
 
 # define MAX 2043
 
@@ -16,6 +18,7 @@ std::string     trimString(const std::string &str);
 class Client
 {
     public:
+        size_t                              seekg;
         int                                 clSocker;
         int                                 phase;
         int                                 fd;
@@ -27,10 +30,11 @@ class Client
         Location                            *location;
     
     // member func
-    Client():phase(1), methodType(""){}
+    Client():seekg(0), phase(1), methodType(""){}
     void    parse();
     void    uploadFile();
     void    PostHandler();
+    void    DeleteHandler();
 };
 
 #endif

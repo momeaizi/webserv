@@ -1,6 +1,5 @@
 #include "Client.hpp"
 
-namespace fs = std::__fs::filesystem; // remove
 
 
 void IsUriValid(std::string str)
@@ -40,7 +39,33 @@ void runCGI()
 
 void Client::uploadFile()
 {
-
+    std::string                         FileName;
+    std::string                         str;
+    char                                buffer[1024];
+    std::list<std::string>              lines;
+    std::list<std::string>::iterator    it;
+    size_t                              bytes = 1024;
+    size_t ContentLength = stoi(this->headerFields["Content-Length"]);
+    std::ifstream inputFile("filename.txt");
+    inputFile.seekg(this->seekg + 6, std::ios::cur);
+    time_t now = time(0);
+    tm *gmtm = gmtime(&now);
+    
+    FileName = std::to_string(gmtm->tm_mday) + ":";
+    FileName += std::to_string(gmtm->tm_mon + 1) + ":";
+    FileName += std::to_string(1900 + gmtm->tm_year) + "_";
+    FileName += std::to_string(gmtm->tm_hour + 5) + ":";
+    FileName += std::to_string(gmtm->tm_min + 30) + ":";
+    FileName += std::to_string(gmtm->tm_sec);
+    std::ofstream fout(FileName);
+    while (str.size() < ContentLength)
+    {
+        if (ContentLength - str.size() < 1024) bytes = ContentLength -  str.size();
+        inputFile.read(buffer, bytes);
+        str   += std::string(buffer, bytes);
+    }
+    fout << str;
+    fout.close();
 }
 
 void Client::parse()
@@ -48,8 +73,8 @@ void Client::parse()
 
     std::string str;
     std::string buffer;
-    std::vector<std::string> lines;
-    std::vector<std::string>::iterator it;
+    std::list<std::string> lines;
+    std::list<std::string>::iterator it;
     size_t first;
 
     lines = getlines(0);
@@ -58,6 +83,7 @@ void Client::parse()
     for (it = lines.begin(); it != lines.end(); it++)
     {
         str = *it;
+        this->seekg += str.size() + 2;
         if (str == "")
         {
             buffer = getRemainder();
@@ -99,9 +125,9 @@ void Client::PostHandler()
         uploadFile();
         send_201();
     }
-    if (!fs::exists(resources))
+    if (!ft::isPathExists(resources))
         send_404();
-    if (fs::is_directory(resources)) // create func
+    if (ft::isDirectory(resources)) // create func
     {
         if (!hasSlash(resources))
             send_301();
@@ -110,7 +136,7 @@ void Client::PostHandler()
                 filePath += location->GetIndex();
         else
                 filePath += "index.html";
-        if (!fs::is_regular_file(filePath))
+        if (!ft::isFile(filePath))
             send_403();
         resources = filePath;
     }
@@ -125,6 +151,7 @@ int main()
     Client obj;
     while (obj.phase)
         obj.parse();
+    obj.uploadFile();
     std:: cout << std::endl << "RESPONS" << std::endl;
     std:: cout << "_________________" << std::endl;
     std::cout << "method is : " <<  obj.methodType << std::endl << "URI: " << obj.URI << " " << std::endl;

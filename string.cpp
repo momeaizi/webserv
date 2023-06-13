@@ -20,12 +20,12 @@ std::string trim(const std::string& str, const std::string t)
 }
 
 
-std::vector<std::string> getlines(int phase)
+std::list<std::string> getlines(int phase)
 {
     static std::string        str;
     static size_t             seekg = 0;                
     std::string               sep;
-    std::vector<std::string>  lines;
+    std::list<std::string>  lines;
     char                      buffer[1024];
     std::size_t               loc = 0;
     int                       bytes;
@@ -58,7 +58,7 @@ std::vector<std::string> getlines(int phase)
 
 std::string getRemainder()
 {
-    return getlines(1)[0];
+    return getlines(1).back();
 }
 
 std::string trimString(const std::string &str)
