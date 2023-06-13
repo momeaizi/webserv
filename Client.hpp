@@ -32,11 +32,13 @@ class Client
         Location                            *location;
     
     // member func
-    Client():seekg(0), phase(1), methodType(""){}
+    Client():seekg(0), phase(1), methodType(""), resources(""){}
     void    parse();
     void    uploadFile();
     void    PostHandler();
     void    DeleteHandler();
+    void    GetHandler();
+    std::string getRsouces() {return resources;}
 };
 
 #endif

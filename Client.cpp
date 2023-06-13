@@ -176,6 +176,31 @@ void    Client::DeleteHandler()
     send_403();
 }
 
+void    Client::GetHandler()
+{
+    if (!resources) send_404();
+    if (ft::isDirectory(resources))
+    {
+        if (!hasSlash(resources))
+            send_301();
+        std::string filePath = resources;
+        if(hasIndex(location->index))
+                filePath += location->GetIndex();
+        else
+                filePath += "index.html";
+        if (!ft::isFile(filePath))
+        {
+            if (location->autoindex)
+                send_200();
+            send_403();
+        }
+        resources = filePath;
+    }
+    if (!location->LocationHasCgi())
+        send_200();
+    runCGI();
+}
+
 int main()
 {
     Client obj;
