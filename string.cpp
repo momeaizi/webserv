@@ -11,8 +11,6 @@ bool containsOnlyWhitespaces(const std::string& str)
 
 std::string trim(const std::string& str, const std::string t)
 {
-<<<<<<< HEAD
-=======
     size_t first = str.find_first_not_of(t);
 
     if (first == std::string::npos)
@@ -66,7 +64,6 @@ std::string getRemainder()
 std::string trimString(const std::string &str)
 {
 
->>>>>>> 2a5b7396c573af1a56a27a309332ee3c68dafeaa
     std::string::const_iterator     start = str.begin();
     std::string::const_iterator     end = str.end();
 
