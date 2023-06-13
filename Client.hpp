@@ -4,10 +4,11 @@
 #include "Location.hpp"
 // #include <vector>
 std::string     trimString(const std::string &str);
+
 class Client
 {
     public:
-        int                                 clSocker;
+        int                                 clSocket;
         int                                 phase;
         int                                 fd;
         unsigned int                        serverId;
@@ -16,9 +17,10 @@ class Client
         std::string                         resources;
         std::map<std::string, std::string>  headerFields;
         Location                            *location;
+        std::string                         ipAddress;
     
     // member func
-    Client():methodType(""), phase(1){}
+    Client(int clSocket, unsigned int serverId, const std::string &ipAddress) : clSocket(clSocket), phase(1), serverId(serverId), methodType(""), ipAddress(ipAddress) {}
     void parse();
 
 

@@ -18,7 +18,10 @@
 #include <string>
 #include <map>
 #include <set>
+#include <list>
 #include "Location.hpp"
+#include "Client.hpp"
+
 
 
 
@@ -58,6 +61,7 @@ class   Server
 
         void        createSocket();
         void        startListening();
+        int         acceptClient(std::list<Client> &clients, size_t serverId);
         void        clear();
         Server  &operator+= (const Server& serv);
 

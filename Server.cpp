@@ -21,7 +21,7 @@ void        Server::createSocket()
             bind_address->ai_socktype, bind_address->ai_protocol);
 
     if (socket_listen < 0)
-        throw "socket() failed." + std::to_string(errno);
+        throw "socket() failed. " + std::to_string(errno);
 
     int yes = 1;
     setsockopt(socket_listen, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
@@ -32,11 +32,13 @@ void        Server::createSocket()
     std::cerr << "Binding socket to local address..." << std::endl;
 
     if (bind(socket_listen, bind_address->ai_addr, bind_address->ai_addrlen))
-        throw "bind() failed." + std::to_string(errno);
+        throw "bind() failed. " + std::to_string(errno);
 
     freeaddrinfo(bind_address);
 
     FD_SET(socket_listen, &master);
+
+
     if (socket_listen > max_socket)
         max_socket = socket_listen;
 }
@@ -50,8 +52,35 @@ void         Server::startListening()
     std::cerr << "Listening..." << std::endl;
 
     if (listen(socket_listen, 10) < 0)
-        throw "listen() failed." + std::to_string(errno);
+        throw "listen() failed. " + std::to_string(errno);
 }
+
+
+int         Server::acceptClient(std::list<Client> &clients, size_t serverId)
+{
+    struct sockaddr_storage client_address;
+    socklen_t               client_len = sizeof(client_address);
+    int                     socket_client = accept(socket_listen, (struct sockaddr*) &client_address, &client_len);
+    char                    address_buffer[100];
+
+    if (socket_client < 0)
+    {
+        std::cerr << "accept() failed. " << errno << std::endl;
+        return 1;
+    }
+
+    getnameinfo((struct sockaddr*)&client_address, client_len, address_buffer, sizeof(address_buffer), 0, 0, NI_NUMERICHOST);
+
+    clients.push_back(Client(socket_client, serverId, address_buffer));
+
+    FD_SET(socket_client, &master);
+    if (socket_client > max_socket)
+        max_socket = socket_client;
+
+
+    return 0;
+}
+
 
 void         Server::clear()
 {
