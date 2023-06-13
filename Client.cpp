@@ -1,5 +1,7 @@
 #include "Client.hpp"
 
+# include <dirent.h>
+# include <cstdio>
 
 
 void IsUriValid(std::string str)
@@ -145,6 +147,34 @@ void Client::PostHandler()
     runCGI();
 }
 
+int deleteDir(const char* path)
+{
+    DIR* dir = opendir(path);
+
+    dirent* entry;
+    while ((entry = readdir(dir)) != nullptr)
+    {
+        const char* filename = entry->d_name;
+        if (std::remove(filename) != 0)
+            return 0;
+    }
+    closedir(dir);
+    return 1;
+}
+
+void    Client::DeleteHandler()
+{
+    if (ft::isFile(resources))
+    {
+        remove(resources.data());
+        send_204();
+    }
+    if (deleteDir(resources))
+        send_204();
+    if (access(directory, W_OK))
+        send_500();
+    send_403();
+}
 
 int main()
 {

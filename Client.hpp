@@ -7,9 +7,11 @@
 # include <sys/socket.h>
 # include <fstream>
 # include <list>
+# include <dirent.h>
+# include <cstdio>
 # include <string>
 # include <iostream>
-#include <ctime>
+# include <ctime>
 
 # define MAX 2043
 
