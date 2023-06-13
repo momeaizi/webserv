@@ -9,7 +9,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
-
 #include <ctype.h>
 
 
@@ -21,26 +20,14 @@
 #include <list>
 #include "Location.hpp"
 #include "Client.hpp"
+#include "ConfigAttr.hpp"
 
 
 
 
 extern fd_set          master;
-extern int             max_socket;
 
 
-struct Host
-{
-    std::map<int, std::string>                              errorPages;
-    long                                                    clientMaxBodySize;
-    std::set<std::string>                                   allowedMethods;
-    std::pair<int, std::string>                             redirection;
-    std::map<std::string, Location>                         locations;
-
-    Host();
-    Host(const Host &host);
-    void    clear();
-};
 
 class   Server
 {
@@ -49,12 +36,13 @@ class   Server
         int                                                     socket_listen;
         std::string                                             port;
         std::string                                             hostName;
-        Host                                                    host;
-        std::map<std::string, Host>                             hosts;
+        std::map<std::string, ConfigAttr>                       configAttrs;
 
 
         Server();
         Server(const Server &serv);
+        Server  &operator= (const Server& serv);
+        Server  &operator+= (const Server& serv);
         ~Server();
 
 
@@ -63,7 +51,6 @@ class   Server
         void        startListening();
         int         acceptClient(std::list<Client> &clients, size_t serverId);
         void        clear();
-        Server  &operator+= (const Server& serv);
 
 };
 

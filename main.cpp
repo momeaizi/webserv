@@ -11,7 +11,6 @@
 
 
 fd_set          master;
-int             max_socket;
 
 void    testParsing()
 {
@@ -25,9 +24,9 @@ void    testParsing()
         {
             std::cout << "host " << servers[i].hostName << std::endl;
             std::cout << "port " << servers[i].port << std::endl;
-            std::cout << "size : " << servers[i].hosts.size() << std::endl;
-            std::map<std::string, Host>::iterator it = servers[i].hosts.begin();
-            for (; it != servers[i].hosts.end(); ++it)
+            std::cout << "size : " << servers[i].configAttrs.size() << std::endl;
+            std::map<std::string, ConfigAttr>::iterator it = servers[i].configAttrs.begin();
+            for (; it != servers[i].configAttrs.end(); ++it)
             {
                 std::cout << "Host host " << it->first << std::endl;
                 std::cout << "clientMaxBodySize " << it->second.clientMaxBodySize << std::endl;
@@ -121,7 +120,7 @@ int main()
             reads = master;
             writes = master;
 
-            if (select(max_socket + 1, &reads, &writes, 0, 0) < 0)
+            if (select(server.size() + clients.size() + 4, &reads, &writes, 0, 0) < 0)
                 throw "select() failed. " + std::to_string(errno);
 
     
@@ -136,37 +135,35 @@ int main()
 
             for (std::list<Client>::iterator it = clients.begin(); it != clients.end();)
             {
-
                 if (FD_ISSET(it->clSocket, &reads))
                 {
                     std::cout << it->ipAddress << std::endl;
                     char    read[1024];
                     int     bytes_received = recv(it->clSocket, read, 1024, 0);
-                    if (bytes_received < 0)
+                    if (bytes_received <= 0)
                     {
-                        FD_CLR(it->clSocket, &master);
-                        close(it->clSocket);
+                        it->drop();
                         clients.erase(it++);
-                        ++it;
                         continue ;
                     }
 
                     std::cout << " ---- Request Begin ---" <<  std::endl;
                     std::cout << read << std::endl;
                     std::cout << " ---- Request End  ---" <<  std::endl;
-
-                }
-                else if (FD_ISSET(it->clSocket, &writes))
-                {
-
-                    char buff[] =    "HTTP/1.1 200 OK\r\n"
-                                "Server: Allah Y7ssen L3wan\r\n"
-                                "Content-Length: 12\r\n"
-                                "Content-Type: text/plain\r\n\r\n"
-                                "HELLO WORLD!";
+        
+                    char buff[] =   "HTTP/1.1 200 OK\r\n"
+                                    "Server: Allah Y7ssen L3wan\r\n"
+                                    "Content-Length: 12\r\n"
+                                    "Content-Type: text/plain\r\n\r\n"
+                                    "HELLO WORLD!";
                     if (send(it->clSocket, buff, sizeof(buff), 0) < 0)
                         perror("Send -> ");
+
                 }
+                // else if (FD_ISSET(it->clSocket, &writes))
+                // {
+
+                // }
                 ++it;
             }
         }
@@ -183,5 +180,5 @@ int main()
         std::cerr << e << std::endl;
     }
 
-    return 0;
+    return errno;
 }

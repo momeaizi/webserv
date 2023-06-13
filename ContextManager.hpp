@@ -9,6 +9,7 @@
 #include <set>
 #include "Server.hpp"
 #include "Location.hpp"
+#include "ConfigAttr.hpp"
 
 std::string                 trimString(const std::string &str);
 std::vector<std::string>    splitString(const std::string& str, char delimiter);
@@ -25,6 +26,7 @@ class   ContextManager
         std::ifstream                       configFIle;
         std::vector<Server>                 servers;
         std::map<std::string, unsigned int> portServer;
+        ConfigAttr                          configAttr;
 
 
         ContextManager(const char *configFileName);

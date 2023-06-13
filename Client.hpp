@@ -16,6 +16,8 @@
 
 # define MAX 2043
 
+extern fd_set          master;
+
 
 std::string     trimString(const std::string &str);
 
@@ -37,14 +39,18 @@ class Client
         std::string                         ipAddress;
     
 
-    Client(int clSocket, unsigned int serverId, const std::string &ipAddress) : clSocket(clSocket), phase(1), serverId(serverId), lenUpload(0), seekg(0), methodType(""), resources(""), ipAddress(ipAddress) {}
-    Client() : phase(1), lenUpload(0), seekg(0), methodType(""), resources("") {}
+    Client(int clSocket, unsigned int serverId, const std::string &ipAddress) : 
+                clSocket(clSocket), phase(1), serverId(serverId), lenUpload(0), seekg(0), methodType(""), resources(""), ipAddress(ipAddress) {}
+    Client() 
+        : phase(1), lenUpload(0), seekg(0), methodType(""), resources("") {}
+
 
     void    parse();
     void    uploadFile();
     void    PostHandler();
     void    DeleteHandler();
     void    GetHandler();
+    void    drop();
     std::string getRsouces() {return resources;}
 };
 

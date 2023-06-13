@@ -209,16 +209,28 @@ void    Client::GetHandler()
     runCGI();
 }
 
-int main()
+// int main()
+// {
+//     Client obj;
+//     while (obj.phase)
+//         obj.parse();
+//     obj.uploadFile();
+//     std:: cout << std::endl << "RESPONS" << std::endl;
+//     std:: cout << "_________________" << std::endl;
+//     std::cout << "method is : " <<  obj.methodType << std::endl << "URI: " << obj.URI << " " << std::endl;
+//     std:: cout << "_________________" << std::endl;
+//     for(auto& el:obj.headerFields)
+//         std::cout << el.first << "\n" << el.second << std::endl<< std::endl;
+// }
+
+
+
+
+
+
+
+void    Client::drop()
 {
-    Client obj;
-    while (obj.phase)
-        obj.parse();
-    obj.uploadFile();
-    std:: cout << std::endl << "RESPONS" << std::endl;
-    std:: cout << "_________________" << std::endl;
-    std::cout << "method is : " <<  obj.methodType << std::endl << "URI: " << obj.URI << " " << std::endl;
-    std:: cout << "_________________" << std::endl;
-    for(auto& el:obj.headerFields)
-        std::cout << el.first << "\n" << el.second << std::endl<< std::endl;
+    close(clSocket);
+    FD_CLR(clSocket, &master);
 }

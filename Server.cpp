@@ -37,10 +37,6 @@ void        Server::createSocket()
     freeaddrinfo(bind_address);
 
     FD_SET(socket_listen, &master);
-
-
-    if (socket_listen > max_socket)
-        max_socket = socket_listen;
 }
 
 
@@ -74,9 +70,6 @@ int         Server::acceptClient(std::list<Client> &clients, size_t serverId)
     clients.push_back(Client(socket_client, serverId, address_buffer));
 
     FD_SET(socket_client, &master);
-    if (socket_client > max_socket)
-        max_socket = socket_client;
-
 
     return 0;
 }
@@ -85,64 +78,42 @@ int         Server::acceptClient(std::list<Client> &clients, size_t serverId)
 void         Server::clear()
 {
 
-    host.clear();
     socket_listen = -1;
     port.clear();
     hostName.clear();
-    hosts.clear();
+    configAttrs.clear();
+}
+
+Server::Server() : socket_listen(-1) {}
+
+Server::Server(const Server &serv)
+{
+    *this = serv;
+}
+
+Server  &Server::operator= (const Server& serv)
+{
+    clear();
+    configAttrs = serv.configAttrs;
+    socket_listen = serv.socket_listen;
+    port = serv.port;
+    hostName = serv.hostName;
+
+    return *this;
 }
 
 
 Server  &Server::operator+= (const Server& serv)
 {
-    std::pair<std::string, Host>    val = 
-                                    make_pair(serv.hosts.begin()->first, serv.hosts.begin()->second);
-    hosts.insert(val);
+    std::pair<std::string, ConfigAttr>    val = 
+                                    make_pair(serv.configAttrs.begin()->first, serv.configAttrs.begin()->second);
+    configAttrs.insert(val);
     return *this;
 }
 
-
-Server::Server()
-{
-    clear();
-}
-
-Server::Server(const Server &serv)
-{
-    clear();
-    hosts = serv.hosts;
-    socket_listen = serv.socket_listen;
-    port = serv.port;
-    hostName = serv.hostName;
-}
 
 Server::~Server()
 {
     clear();
 }
 
-
-
-Host::Host()
-{
-    clear();
-}
-
-Host::Host(const Host &host)
-{
-    errorPages = host.errorPages;
-    clientMaxBodySize = host.clientMaxBodySize;
-    allowedMethods = host.allowedMethods;
-    redirection = host.redirection;
-    locations = host.locations;
-}
-
-void    Host::clear()
-{
-    errorPages.clear();
-    allowedMethods.clear();
-    locations.clear();
-    redirection.first = 0;
-    redirection.second.clear();
-    clientMaxBodySize = 0;
-}
