@@ -1,89 +1,14 @@
 #include "Client.hpp"
-#include "string.hpp"
-#include <sys/socket.h>
-#include <fstream> // remove
-#include <string>
-#include <iostream>
 
+# include <dirent.h>
+# include <cstdio>
 
-#define MAX 2043
-#define buf 1024
-
-
-void send_414()
-{
-    std::cout << "error  414 Request_URI Too Long!!!" << std::endl;
-    exit(0);
-}
-
-void send_405()
-{
-    std::cout << "error  405 Method Not Allowed!!!" << std::endl;
-    exit(0);
-}
-
-void send_505()
-{
-    std::cout << "error  505 !!!" << std::endl;
-    exit(0);
-}
-
-void send_400()
-{
-    std::cout << "error  400 Bad Request !!!" << std::endl;
-    exit(0);
-}
-
-std::string tok(std::string &str, std::string sep)
-{
-    std::string sepstring;
-    int loc = str.find(sep);
-    sepstring = str.substr(0, loc);
-    str = str.substr(loc + sep.size());
-    return sepstring;
-}
-
-std::vector<std::string> getlines(int phase)
-{
-    static std::string        str;
-    static size_t             seekg = 0;                
-    std::string               sep;
-    std::vector<std::string>  lines;
-    char                      buffer[1024];
-    std::size_t               loc = 0;
-    int                       bytes;
-    int                       fd;
-
-    if (phase)
-    {
-        lines.push_back(str);
-        return lines;
-    }
-    // bytes  = recv(fd, buffer, (size_t)buf);
-    std::ifstream inputFile("filename.txt");
-    bytes = buf;
-    inputFile.seekg(seekg, std::ios::cur);
-    inputFile.read(buffer, bytes);
-    seekg += bytes;
-    str   += std::string(buffer, bytes);
-    sep   = "\\r\n";
-    loc   = str.find(sep);
-    while (loc != std::string::npos)
-    {
-        lines.push_back(tok(str, sep));
-        if (lines.back() == "")
-            break ;
-        loc = str.find(sep);
-    }
-
-    return lines;
-}
 
 void IsUriValid(std::string str)
 {
     const std::string allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~!$&'()*+,;=:@/?#[]";
-    for(int i = 0; i < str.size(); i++)
-        if (allowed.find(str[i]) == -1)
+    for(size_t i = 0; i < str.size(); i++)
+        if (allowed.find(str[i]) ==std::string::npos)
             send_400(); 
 }
 
@@ -96,9 +21,58 @@ void IsMethodValid(std::string method)
     if (!allmethods.count(method)) send_405(); 
 }
 
-std::string getRemainder()
+bool hasSlash(std::string resource)
 {
-    return getlines(1)[0];
+    int index;
+
+    index = resource.length() - 1;
+    return (resource[index] == '/');
+}
+
+bool hasIndex(std::string index)
+{
+    return (index == "");
+}
+
+void runCGI()
+{
+
+}
+
+void Client::uploadFile()
+{
+    std::string                         FileName;
+    std::string                         str;
+    char                                buffer[1024];
+    std::list<std::string>              lines;
+    std::list<std::string>::iterator    it;
+    size_t                              bytes = 1024;
+    size_t ContentLength = stoi(this->headerFields["Content-Length"]);
+    std::ifstream inputFile("filename.txt"); // recv
+    inputFile.seekg(this->seekg + 6, std::ios::cur); // recv
+    time_t now = time(0);
+    tm *gmtm = gmtime(&now);
+    
+    FileName = std::to_string(gmtm->tm_mday) + ":";
+    FileName += std::to_string(gmtm->tm_mon + 1) + ":";
+    FileName += std::to_string(1900 + gmtm->tm_year) + "_";
+    FileName += std::to_string(gmtm->tm_hour + 5) + ":";
+    FileName += std::to_string(gmtm->tm_min + 30) + ":";
+    FileName += std::to_string(gmtm->tm_sec);
+    std::ofstream fout(FileName);
+    if (lenUpload >= ContentLength)
+        return ;
+    if (ContentLength - lenUpload < 1024) bytes = ContentLength -  str.size();
+    inputFile.read(buffer, bytes);
+    str   = std::string(buffer, bytes);
+    lenUpload += bytes;
+    if (lenUpload > ContentLength)
+    {
+        this->buffer = str.substr(ContentLength);
+        str = str.substr(0, ContentLength);
+    }
+    fout << str;
+    fout.close();
 }
 
 void Client::parse()
@@ -106,8 +80,8 @@ void Client::parse()
 
     std::string str;
     std::string buffer;
-    std::vector<std::string> lines;
-    std::vector<std::string>::iterator it;
+    std::list<std::string> lines;
+    std::list<std::string>::iterator it;
     size_t first;
 
     lines = getlines(0);
@@ -116,6 +90,7 @@ void Client::parse()
     for (it = lines.begin(); it != lines.end(); it++)
     {
         str = *it;
+        this->seekg += str.size() + 2;
         if (str == "")
         {
             buffer = getRemainder();
@@ -149,12 +124,97 @@ void Client::parse()
         }
     }
 }
+
+void Client::PostHandler()
+{
+    if (location->GetUpload() != "")
+    {
+        uploadFile();
+        send_201();
+    }
+    if (!ft::isPathExists(resources))
+        send_404();
+    if (ft::isDirectory(resources)) // create func
+    {
+        if (!hasSlash(resources))
+            send_301();
+        std::string filePath = resources;
+        if(hasIndex(location->index))
+                filePath += location->GetIndex();
+        else
+                filePath += "index.html";
+        if (!ft::isFile(filePath))
+            send_403();
+        resources = filePath;
+    }
+    if (!location->LocationHasCgi())
+        send_403();
+    runCGI();
+}
+
+int deleteDir(const char* path)
+{
+    DIR* dir = opendir(path);
+
+    dirent* entry;
+    while ((entry = readdir(dir)) != nullptr)
+    {
+        const char* filename = entry->d_name;
+        if (ft::isDirectory(filename))
+            if (!deleteDir(filename))
+                return 0;
+        if (std::remove(filename) != 0)
+            return 0;
+    }
+    closedir(dir);
+    return 1;
+}
+
+void    Client::DeleteHandler()
+{
+    if (ft::isFile(resources))
+    {
+        remove(resources.data());
+        send_204();
+    }
+    if (deleteDir(resources.data()))
+        send_204();
+    if (access(resources.data(), W_OK))
+        send_500();
+    send_403();
+}
+
+void    Client::GetHandler()
+{
+    if (getRsouces() == "") send_404();
+    if (ft::isDirectory(resources))
+    {
+        if (!hasSlash(resources))
+            send_301();
+        std::string filePath = resources;
+        if(hasIndex(location->index))
+                filePath += location->GetIndex();
+        else
+                filePath += "index.html";
+        if (!ft::isFile(filePath))
+        {
+            if (location->autoindex)
+                send_200();
+            send_403();
+        }
+        resources = filePath;
+    }
+    if (!location->LocationHasCgi())
+        send_200();
+    runCGI();
+}
+
 int main()
 {
     Client obj;
-    int i = 0;
     while (obj.phase)
         obj.parse();
+    obj.uploadFile();
     std:: cout << std::endl << "RESPONS" << std::endl;
     std:: cout << "_________________" << std::endl;
     std::cout << "method is : " <<  obj.methodType << std::endl << "URI: " << obj.URI << " " << std::endl;
