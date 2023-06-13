@@ -21,6 +21,7 @@ std::string     trimString(const std::string &str);
 class Client
 {
     public:
+        size_t                              lenUpload;
         size_t                              seekg;
         int                                 clSocker;
         int                                 phase;
@@ -34,7 +35,7 @@ class Client
         Location                            *location;
     
     // member func
-    Client():seekg(0), phase(1), methodType(""), resources(""){}
+    Client():lenUpload(0), seekg(0), phase(1), methodType(""), resources(""){}
     void    parse();
     void    uploadFile();
     void    PostHandler();

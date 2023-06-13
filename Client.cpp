@@ -45,7 +45,6 @@ void Client::uploadFile()
     std::string                         str;
     char                                buffer[1024];
     std::list<std::string>              lines;
-    size_t len = 0;
     std::list<std::string>::iterator    it;
     size_t                              bytes = 1024;
     size_t ContentLength = stoi(this->headerFields["Content-Length"]);
@@ -61,14 +60,18 @@ void Client::uploadFile()
     FileName += std::to_string(gmtm->tm_min + 30) + ":";
     FileName += std::to_string(gmtm->tm_sec);
     std::ofstream fout(FileName);
-    while (len < ContentLength)
+    if (lenUpload >= ContentLength)
+        return ;
+    if (ContentLength - lenUpload < 1024) bytes = ContentLength -  str.size();
+    inputFile.read(buffer, bytes);
+    str   = std::string(buffer, bytes);
+    lenUpload += bytes;
+    if (lenUpload > ContentLength)
     {
-        if (ContentLength - len < 1024) bytes = ContentLength -  str.size();
-        inputFile.read(buffer, bytes);
-        str   = std::string(buffer, bytes);
-        len += bytes;
-        fout << str;
+        this->buffer = str.substr(ContentLength);
+        str = str.substr(0, ContentLength);
     }
+    fout << str;
     fout.close();
 }
 
