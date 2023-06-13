@@ -45,11 +45,12 @@ void Client::uploadFile()
     std::string                         str;
     char                                buffer[1024];
     std::list<std::string>              lines;
+    size_t len = 0;
     std::list<std::string>::iterator    it;
     size_t                              bytes = 1024;
     size_t ContentLength = stoi(this->headerFields["Content-Length"]);
-    std::ifstream inputFile("filename.txt");
-    inputFile.seekg(this->seekg + 6, std::ios::cur);
+    std::ifstream inputFile("filename.txt"); // recv
+    inputFile.seekg(this->seekg + 6, std::ios::cur); // recv
     time_t now = time(0);
     tm *gmtm = gmtime(&now);
     
@@ -60,13 +61,14 @@ void Client::uploadFile()
     FileName += std::to_string(gmtm->tm_min + 30) + ":";
     FileName += std::to_string(gmtm->tm_sec);
     std::ofstream fout(FileName);
-    while (str.size() < ContentLength)
+    while (len < ContentLength)
     {
-        if (ContentLength - str.size() < 1024) bytes = ContentLength -  str.size();
+        if (ContentLength - len < 1024) bytes = ContentLength -  str.size();
         inputFile.read(buffer, bytes);
-        str   += std::string(buffer, bytes);
+        str   = std::string(buffer, bytes);
+        len += bytes;
+        fout << str;
     }
-    fout << str;
     fout.close();
 }
 
@@ -155,6 +157,9 @@ int deleteDir(const char* path)
     while ((entry = readdir(dir)) != nullptr)
     {
         const char* filename = entry->d_name;
+        if (ft::isDirectory(filename))
+            if (!deleteDir(filename))
+                return 0;
         if (std::remove(filename) != 0)
             return 0;
     }
@@ -169,16 +174,16 @@ void    Client::DeleteHandler()
         remove(resources.data());
         send_204();
     }
-    if (deleteDir(resources))
+    if (deleteDir(resources.data()))
         send_204();
-    if (access(directory, W_OK))
+    if (access(resources.data(), W_OK))
         send_500();
     send_403();
 }
 
 void    Client::GetHandler()
 {
-    if (!resources) send_404();
+    if (getRsouces() == "") send_404();
     if (ft::isDirectory(resources))
     {
         if (!hasSlash(resources))

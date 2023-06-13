@@ -5,6 +5,7 @@
 # include "errors.hpp"
 # include "filesCont.hpp"
 # include <sys/socket.h>
+# include <unistd.h>
 # include <fstream>
 # include <list>
 # include <dirent.h>
@@ -27,6 +28,7 @@ class Client
         unsigned int                        serverId;
         std::string                         methodType;
         std::string                         URI;
+        std::string                         buffer;
         std::string                         resources;
         std::map<std::string, std::string>  headerFields;
         Location                            *location;
