@@ -40,11 +40,11 @@ void    testParsing()
                     std::cout << "\troot " << it_->second.root << std::endl;
                     std::cout << "\tindex " << it_->second.index << std::endl;
                     std::cout << "\tupload " << it_->second.upload << std::endl;
-                    std::cout << "\tredirection " << it_->second.redirection.first << ", " << it->second.redirection.first << std::endl;
+                    std::cout << "\tredirection " << it_->second.redirection.first << ", " << it_->second.redirection.second << std::endl;
                     std::cout << "\tallowed methods " << std::endl;
 
-                    std::set<std::string>::iterator it__ = it->second.allowedMethods.begin();
-                    for (; it__ != it->second.allowedMethods.end(); ++it__)
+                    std::set<std::string>::iterator it__ = it_->second.allowedMethods.begin();
+                    for (; it__ != it_->second.allowedMethods.end(); ++it__)
                         std::cout << "\t\t" << *it__ << std::endl;
 
                     

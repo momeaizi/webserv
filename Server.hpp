@@ -52,6 +52,9 @@ class   Server
         int         acceptClient(std::list<Client> &clients, size_t serverId);
         void        clear();
 
+        void        setHostName(std::vector<std::string> &tokens, unsigned int lineNumber);
+        void        setPort(std::vector<std::string> &tokens, unsigned int lineNumber);
+
 };
 
 

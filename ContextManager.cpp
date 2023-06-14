@@ -25,68 +25,31 @@ int	ContextManager::parseLocation(Location &location)
 	{
 		++lineNumber;
 
-		if (!buff.length() || containsOnlyWhitespaces(buff))
+		if (!buff.length() || containsOnlyWhitespaces(buff)) // SKIP EMPTY LINE
 			continue ;
-
 
 		tokens = splitString(buff, ' ');
 
 		if (tokens[0] == "\t\troot")
-		{
-			if (tokens.size() != 2)
-				throw "invalid number of arguments in \"root\" directive in serv.conf:" + std::to_string(lineNumber);
-			location.root = tokens[1];
-		}   // SET ROOT ATTRIBUTE OF THE SERVER
-
+			location.setRoot(tokens, lineNumber);  // SET ROOT ATTRIBUTE OF THE SERVER
 		else if (tokens[0] == "\t\tindex")
-		{
-			if (tokens.size() != 2)
-				throw "invalid number of arguments in \"index\" directive in serv.conf:" + std::to_string(lineNumber);
-			location.index = tokens[1];
-		}   // SET INDEX ATTRIBUTE OF THE SERVER
-
+			location.setIndex(tokens, lineNumber); // SET INDEX ATTRIBUTE OF THE SERVER
 		else if (tokens[0] == "\t\tupload_pass")
-		{
-			if (tokens.size() != 2)
-				throw "invalid number of arguments in \"upload_pass\" directive in serv.conf:" + std::to_string(lineNumber);
-			location.upload = tokens[1];
-		}   // SET UPLOAD ATTRIBUTE OF THE SERVER
-
+			location.setUpload(tokens, lineNumber); // SET UPLOAD ATTRIBUTE OF THE SERVER
 		else if (tokens[0] == "\t\tcgi_pass")
-		{
-			if (tokens.size() != 3)
-				throw "invalid number of arguments in \"cgi_pass\" directive in serv.conf:" + std::to_string(lineNumber);
-			location.cgi[tokens[1]] = tokens[2];
-		}   // SET CGI ATTRIBUTE OF THE SERVER
-
+			location.setCgi(tokens, lineNumber); // SET CGI ATTRIBUTE OF THE SERVER
 		else if (tokens[0] == "\t\tautoindex")
-		{
-			if (tokens.size() != 2)
-				throw "invalid number of arguments in \"tautoindex\" directive in serv.conf:" + std::to_string(lineNumber);
-			if (tokens[1] != "on" && tokens[1] != "off")
-				throw "argumnet of autoindex should be on or off";
-			location.autoindex = (tokens[1].size() == 2) ? true : false;
-		}   // SET AUTOINDEX ATTRIBUTE OF THE SERVER
-
+			location.setAutoindex(tokens, lineNumber); // SET AUTOINDEX ATTRIBUTE OF THE SERVER
 		else if (tokens[0] == "\t\tallow_methods")
-		{
-			if (tokens.size() < 2)
-				throw "invalid number of arguments in \"client_max_body_size\" directive in serv.conf:" + std::to_string(lineNumber);
-			for (size_t  i = 1; i < tokens.size(); ++i)
-				location.allowedMethods.insert(tokens[i]);
-		}   // SET ALLOWEDMETHODS ATTRIBUTE OF THE SERVER
-
+			location.setAllowedMethods(tokens, lineNumber); // SET ALLOWEDMETHODS ATTRIBUTE OF THE SERVER
 		else if (tokens[0] == "\t\treturn")
-		{
-			if (tokens.size() != 3)
-				throw "invalid number of arguments in \"client_max_body_size\" directive in serv.conf:" + std::to_string(lineNumber);
-			location.redirection = make_pair(atoi(tokens[1].c_str()), tokens[2]);
-		}   // SET REDIRECCTION  ATTRIBUTE OF THE SERVER
-
+			location.setRedirection(tokens, lineNumber); // SET REDIRECCTION  ATTRIBUTE OF THE SERVER
 		else
-			return 1;
-	}
-	return 0;
+			return 1; // DIRECTIVE DOESN'T BELONGS TO THE LOCATION DIRECTIVE
+
+	} // GETTING LINES FROM THE FILE
+
+	return 0; // THE END OF THE FILE
 
 }
 
@@ -111,7 +74,9 @@ int	 ContextManager::parseServer()
 		configAttr.clear();
 		return 1;
 	}
-		
+
+
+
 	if (!servers.size())
 		throw "unknown directive in serv.conf:" + std::to_string(lineNumber);
 	else if (tokens[0] == "\tlocation")
@@ -126,29 +91,14 @@ int	 ContextManager::parseServer()
 	}
 
 	if (tokens[0] == "\thost")
-	{
-		if (tokens.size() != 2)
-			throw "invalid number of arguments in \"host\" directive in serv.conf:" + std::to_string(lineNumber);
-		servers.back().hostName = tokens[1];
-	}
+		servers.back().setHostName(tokens, lineNumber);
 	else if (tokens[0] == "\tport")
-	{
-		if (tokens.size() != 2)
-			throw "invalid number of arguments in \"port\" directive in serv.conf:" + std::to_string(lineNumber);
-		servers.back().port = tokens[1];
-	}
+		servers.back().setPort(tokens, lineNumber);
 	else if (tokens[0] == "\tclient_max_body_size")
-	{
-		if (tokens.size() != 2)
-			throw "invalid number of arguments in \"client_max_body_size\" directive in serv.conf:" + std::to_string(lineNumber);
-		configAttr.clientMaxBodySize = atol(tokens[1].c_str());
-	}
+		configAttr.setClientMaxBodySize(tokens, lineNumber);
+
 	else if (tokens[0] == "\terror_page")
-	{
-		if (tokens.size() != 3)
-			throw "invalid number of arguments in \"error_page\" directive in serv.conf:" + std::to_string(lineNumber);
-		configAttr.errorPages[atoi(tokens[1].c_str())] = tokens[2];
-	}
+		configAttr.setErrorPages(tokens, lineNumber);
 	else
 		throw "unknown directive in serv.conf:" + std::to_string(lineNumber);
 

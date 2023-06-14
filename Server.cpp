@@ -117,3 +117,22 @@ Server::~Server()
     clear();
 }
 
+
+
+
+void    Server::setHostName(std::vector<std::string> &tokens, unsigned int lineNumber)
+{
+    if (tokens.size() != 2)
+        throw "invalid number of arguments in \"host\" directive in serv.conf:" + std::to_string(lineNumber);
+
+    hostName = tokens[1];
+}
+
+void    Server::setPort(std::vector<std::string> &tokens, unsigned int lineNumber)
+{
+    if (tokens.size() != 2)
+        throw "invalid number of arguments in \"port\" directive in serv.conf:" + std::to_string(lineNumber);
+
+    port = tokens[1];
+}
+
