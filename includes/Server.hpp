@@ -31,7 +31,7 @@ extern fd_set          master;
 
 class   Server
 {
-    public:
+    private:
 
         int                                                     socket_listen;
         std::string                                             port;
@@ -39,21 +39,31 @@ class   Server
         std::map<std::string, ConfigAttr>                       configAttrs;
 
 
+    public:
+
         Server();
         Server(const Server &serv);
         Server  &operator= (const Server& serv);
         Server  &operator+= (const Server& serv);
         ~Server();
 
-
-
         void        createSocket();
         void        startListening();
         int         acceptClient(std::list<Client> &clients, size_t serverId);
         void        clear();
+        void        attributeExaminer();
 
+        /*                              setters                                         */
         void        setHostName(std::vector<std::string> &tokens, unsigned int lineNumber);
         void        setPort(std::vector<std::string> &tokens, unsigned int lineNumber);
+        void        setSocket(int socket_listen);
+        void        addConfigAttr(const ConfigAttr &configAttr);
+
+        /*                              getters                                         */
+        const std::string                       &getHostName() const;
+        const std::string                       &getPort() const;
+        const int                               &getSocket() const;
+        const std::map<std::string, ConfigAttr> &getConfigAttrs() const;
 
 };
 

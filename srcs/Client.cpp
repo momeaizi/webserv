@@ -1,4 +1,4 @@
-#include "Client.hpp"
+#include "../includes/Client.hpp"
 
 # include <dirent.h>
 # include <cstdio>
@@ -127,7 +127,7 @@ void Client::parse()
 
 void Client::PostHandler()
 {
-    if (location->GetUpload() != "")
+    if (location->getUpload() != "")
     {
         uploadFile();
         send_201();
@@ -139,15 +139,15 @@ void Client::PostHandler()
         if (!hasSlash(resources))
             send_301();
         std::string filePath = resources;
-        if(hasIndex(location->index))
-                filePath += location->GetIndex();
+        if (hasIndex(location->getIndex()))
+            filePath += location->getIndex();
         else
-                filePath += "index.html";
+            filePath += "index.html";
         if (!ft::isFile(filePath))
             send_403();
         resources = filePath;
     }
-    if (!location->LocationHasCgi())
+    if (!location->locationHasCgi())
         send_403();
     runCGI();
 }
@@ -192,19 +192,19 @@ void    Client::GetHandler()
         if (!hasSlash(resources))
             send_301();
         std::string filePath = resources;
-        if(hasIndex(location->index))
-                filePath += location->GetIndex();
+        if(hasIndex(location->getIndex()))
+                filePath += location->getIndex();
         else
                 filePath += "index.html";
         if (!ft::isFile(filePath))
         {
-            if (location->autoindex)
+            if (location->getAutoindex())
                 send_200();
             send_403();
         }
         resources = filePath;
     }
-    if (!location->LocationHasCgi())
+    if (!location->locationHasCgi())
         send_200();
     runCGI();
 }

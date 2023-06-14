@@ -16,7 +16,6 @@ std::vector<std::string>    splitString(const std::string& str, char delimiter);
 bool                        containsOnlyWhitespaces(const std::string& str);
 
 
-
 class   ContextManager
 {
     public:
@@ -33,6 +32,7 @@ class   ContextManager
 
         void    parseConfigFIle();
         int     parseServer();
+        void	addServer();
         int     parseLocation(Location &location);
 
 };

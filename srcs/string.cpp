@@ -1,10 +1,19 @@
-#include "string.hpp"
+#include "../includes/string.hpp"
 
 bool containsOnlyWhitespaces(const std::string& str)
 {
 
     for (size_t i = 0; i < str.length(); ++i)
         if (!std::isspace(str[i]))
+            return false;
+    return true;
+}
+
+bool containsOnlyDigits(const std::string& str)
+{
+
+    for (size_t i = 0; i < str.length(); ++i)
+        if (!std::isdigit(str[i]))
             return false;
     return true;
 }
