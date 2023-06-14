@@ -39,27 +39,35 @@ void runCGI()
 
 }
 
-void Client::uploadFile()
+std::ifstream  Client::initializeUploadFile()
 {
-    std::string                         FileName;
-    std::string                         str;
-    char                                buffer[1024];
-    std::list<std::string>              lines;
-    std::list<std::string>::iterator    it;
-    size_t                              bytes = 1024;
-    size_t ContentLength = stoi(this->headerFields["Content-Length"]);
-    std::ifstream inputFile("filename.txt"); // recv
-    inputFile.seekg(this->seekg + 6, std::ios::cur); // recv
+    std::string FileName;
+
     time_t now = time(0);
     tm *gmtm = gmtime(&now);
-    
     FileName = std::to_string(gmtm->tm_mday) + ":";
     FileName += std::to_string(gmtm->tm_mon + 1) + ":";
     FileName += std::to_string(1900 + gmtm->tm_year) + "_";
     FileName += std::to_string(gmtm->tm_hour + 5) + ":";
     FileName += std::to_string(gmtm->tm_min + 30) + ":";
     FileName += std::to_string(gmtm->tm_sec);
-    std::ofstream fout(FileName);
+    // this->UploadFile.open(FileName);
+    return std::ifsteam(FileName);
+}
+
+void Client::uploadFile()
+{
+    if (!this->lenUpload)
+        this->Upload = initializeUpload();
+
+    std::ifstream inputFile("filename.txt"); // recv
+    inputFile.seekg(this->seekg + 6, std::ios::cur); // recv
+
+
+    std::string                         str;
+    char                                buffer[1024];
+    size_t ContentLength = stoi(this->headerFields["Content-Length"]);
+    size_t                              bytes = 1024;
     if (lenUpload >= ContentLength)
         return ;
     if (ContentLength - lenUpload < 1024) bytes = ContentLength -  str.size();
@@ -71,8 +79,8 @@ void Client::uploadFile()
         this->buffer = str.substr(ContentLength);
         str = str.substr(0, ContentLength);
     }
-    fout << str;
-    fout.close();
+    UploadFile << str;
+    UploadFile.close();
 }
 
 void Client::parse()
@@ -209,28 +217,16 @@ void    Client::GetHandler()
     runCGI();
 }
 
-// int main()
-// {
-//     Client obj;
-//     while (obj.phase)
-//         obj.parse();
-//     obj.uploadFile();
-//     std:: cout << std::endl << "RESPONS" << std::endl;
-//     std:: cout << "_________________" << std::endl;
-//     std::cout << "method is : " <<  obj.methodType << std::endl << "URI: " << obj.URI << " " << std::endl;
-//     std:: cout << "_________________" << std::endl;
-//     for(auto& el:obj.headerFields)
-//         std::cout << el.first << "\n" << el.second << std::endl<< std::endl;
-// }
-
-
-
-
-
-
-
-void    Client::drop()
+int main()
 {
-    close(clSocket);
-    FD_CLR(clSocket, &master);
+    Client obj;
+    while (obj.phase)
+        obj.parse();
+    obj.uploadFile();
+    std:: cout << std::endl << "RESPONS" << std::endl;
+    std:: cout << "_________________" << std::endl;
+    std::cout << "method is : " <<  obj.methodType << std::endl << "URI: " << obj.URI << " " << std::endl;
+    std:: cout << "_________________" << std::endl;
+    for(auto& el:obj.headerFields)
+        std::cout << el.first << "\n" << el.second << std::endl<< std::endl;
 }

@@ -30,6 +30,7 @@ class Client
         unsigned int                        serverId;
         size_t                              lenUpload;
         size_t                              seekg;
+        std::ifstream                       UploadFile;
         std::string                         methodType;
         std::string                         URI;
         std::string                         buffer;
@@ -51,6 +52,7 @@ class Client
     void    DeleteHandler();
     void    GetHandler();
     void    drop();
+    std::ifstream    initializeUploadFile();
     std::string getRsouces() {return resources;}
 };
 
