@@ -20,6 +20,7 @@ extern fd_set          master;
 
 
 std::string     trimString(const std::string &str);
+int deleteDir(const char* path);
 
 class Client
 {
