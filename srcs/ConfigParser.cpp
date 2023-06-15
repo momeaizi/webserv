@@ -57,21 +57,14 @@ void	ConfigParser::addServer()
 
 	if (servers.size()) // fill out the last server with its config attributes
 	{
-		servers.back().addConfigAttr(configAttr);
 		servers.back().attributeExaminer();
 	}
 
-	if (servers.size() > 1 && portServer.count(servers.back().getPort())) // if a server is already using the same port as this server then merge them
-	{
-		unsigned int	index = portServer[servers.back().getPort()];
-		if (servers[index].getHostName() == servers.back().getHostName())
-			throw "\"" + servers.back().getHostName() + "\" already exist on the same port!";
-		servers[index] += servers.back();
+	if (hostPort.count(servers.back().getHostName())) // if a server is already using the same port as this server then merge them
 		servers.pop_back();
-	}
-	else if (servers.size()) // if no server is using the same port as this server then save its index in the memo "portServer"
-		portServer[servers.back().getPort()] = servers.size() - 1;
 
+	else if (servers.size()) // if no server is using the same port as this server then save its index in the memo "portServer"
+		hostPort[servers.back().getHostName()] = servers.back().getPort();
 
 }
 
@@ -82,7 +75,6 @@ int	 ConfigParser::parseServer()
 
 		addServer();
 		servers.push_back(Server()); // push the server to the set
-		configAttr.clear();
 		return 1;
 	}
 
@@ -92,7 +84,7 @@ int	 ConfigParser::parseServer()
 		throw "unknown directive in serv.conf:" + std::to_string(lineNumber);
 	else if (tokens[0] == "\tlocation")
 	{
-		if (!parseLocation(configAttr.locations[tokens[1]]))
+		if (!parseLocation(servers.back().locations[tokens[1]]))
 			return 0;
 		parseServer();
 		return 1;
@@ -103,10 +95,10 @@ int	 ConfigParser::parseServer()
 	else if (tokens[0] == "\tport")
 		servers.back().setPort(tokens, lineNumber);
 	else if (tokens[0] == "\tclient_max_body_size")
-		configAttr.setClientMaxBodySize(tokens, lineNumber);
+		servers.back()..setClientMaxBodySize(tokens, lineNumber);
 
 	else if (tokens[0] == "\terror_page")
-		configAttr.setErrorPages(tokens, lineNumber);
+		servers.back()..setErrorPages(tokens, lineNumber);
 	else
 		throw "unknown directive in serv.conf:" + std::to_string(lineNumber);
 

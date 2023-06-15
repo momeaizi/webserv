@@ -9,12 +9,11 @@
 #include <set>
 #include "Server.hpp"
 #include "Location.hpp"
-#include "ConfigAttr.hpp"
 #include "ConfigParser.hpp"
 #include "string.hpp"
 
-fd_set  readMaster;
-fd_set  writeMaster;
+extern fd_set  readMaster;
+extern fd_set  writeMaster;
 class   ContextManager
 {
     public:
@@ -25,6 +24,7 @@ class   ContextManager
 
         ContextManager();
         void    openAndListen();
+        void    ioMultiplexer();
 
 };
 

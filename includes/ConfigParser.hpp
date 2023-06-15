@@ -1,10 +1,12 @@
 #ifndef CONFIGPARSER_HPP
 #define CONFIGPARSER_HPP
 
-
-#include "ConfigAttr.hpp"
 #include "Server.hpp"
 #include "Location.hpp"
+
+extern fd_set  readMaster;
+extern fd_set  writeMaster;
+
 
 class ConfigParser
 {
@@ -13,8 +15,7 @@ class ConfigParser
         std::string                         buff;
         std::vector<std::string>            tokens;
         std::ifstream                       configFIle;
-        std::map<std::string, unsigned int> portServer;
-        ConfigAttr                          configAttr;
+        std::map<std::string, std::string>  hostPort;
         std::vector<Server>                 &servers;
 
         void                                parseConfigFIle();

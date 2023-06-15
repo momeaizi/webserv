@@ -6,7 +6,6 @@ CC = c++
 CPPFLAGS = -std=c++98  -Wall -Wextra -Werror -fsanitize=address -g
 
 SRCS =	srcs/main.cpp \
-		srcs/ConfigAttr.cpp \
 		srcs/Client.cpp \
 		srcs/Server.cpp \
 		srcs/ContextManager.cpp \

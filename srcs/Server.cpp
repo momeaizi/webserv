@@ -11,7 +11,7 @@ void        Server::openSocket()
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
-    getaddrinfo(NULL, port.c_str(), &hints, &bind_address);
+    getaddrinfo(hostName.c_str(), port.c_str(), &hints, &bind_address);
 
 
 
@@ -86,36 +86,29 @@ Server::Server(const Server &serv)
 Server  &Server::operator= (const Server& serv)
 {
     clear();
-    configAttrs = serv.configAttrs;
     socket_listen = serv.socket_listen;
     port = serv.port;
     hostName = serv.hostName;
+    errorPages = serv.errorPages;
+    clientMaxBodySize = serv.clientMaxBodySize;
+    locations = serv.locations;
 
     return *this;
 }
 
 
-Server  &Server::operator+= (const Server& serv)
-{
-    std::pair<std::string, ConfigAttr>    val = 
-                                    make_pair(serv.configAttrs.begin()->first, serv.configAttrs.begin()->second);
-    configAttrs.insert(val);
-    return *this;
-}
 
 
-Server::~Server()
-{
-    clear();
-}
+Server::~Server() {}
 
 void         Server::clear()
 {
-
+    errorPages.clear();
+    locations.clear();
+    clientMaxBodySize = 0;
     socket_listen = -1;
     port.clear();
     hostName.clear();
-    configAttrs.clear();
 }
 
 void        Server::attributeExaminer()
@@ -148,10 +141,32 @@ void        Server::setSocket(int socket_listen)
 {
     this->socket_listen = socket_listen;
 }
-void        Server::addConfigAttr(const ConfigAttr &configAttr)
+
+void    Server::setClientMaxBodySize(std::vector<std::string> &tokens, unsigned int lineNumber)
 {
-    configAttrs[hostName] = configAttr;
+    if (tokens.size() != 2)
+        throw "invalid number of arguments in \"client_max_body_size\" directive in serv.conf:" + std::to_string(lineNumber);
+
+    if (!containsOnlyDigits(tokens[1]))
+        throw "invalid client_max_body_size number \"" + tokens[1] + "\"";
+    clientMaxBodySize = atoll(tokens[1].c_str());
 }
+
+void    Server::setErrorPages(std::vector<std::string> &tokens, unsigned int lineNumber)
+{
+    if (tokens.size() != 3)
+        throw "invalid number of arguments in \"error_page\" directive in serv.conf:" + std::to_string(lineNumber);
+
+    if (!containsOnlyDigits(tokens[1]))
+        throw "invalid error code number \"" + tokens[1] + "\"";
+    errorPages[atoi(tokens[1].c_str())] = tokens[2];
+}
+
+
+// void        Server::addConfigAttr(const ConfigAttr &configAttr)
+// {
+//     configAttrs[hostName] = configAttr;
+// }
 
 const std::string                       &Server::getHostName() const
 {
@@ -167,7 +182,19 @@ const int                               &Server::getSocket() const
     return socket_listen;
 }
 
-const std::map<std::string, ConfigAttr> &Server::getConfigAttrs() const
+
+
+const std::map<int, std::string>        &Server::getErrorPages() const
 {
-    return configAttrs;
+    return errorPages;
+}
+
+const long long                         &Server::getClientMaxBodySize() const
+{
+    return clientMaxBodySize;
+}
+
+const std::map<std::string, Location>   &Server::getLocations() const
+{
+    return locations;
 }

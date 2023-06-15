@@ -1,18 +1,8 @@
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <vector>
-#include <map>
-#include <set>
-#include <list>
-#include "../includes/Server.hpp"
-#include "../includes/Client.hpp"
-#include "../includes/ConfigParser.hpp"
+
 #include "../includes/ContextManager.hpp"
 
-
-fd_set          master;
-
+fd_set  readMaster;
+fd_set  writeMaster;
 // void    testParsing()
 // {
 //     try
@@ -97,61 +87,12 @@ int main()
 
     try
     {
-        ContextManager  contextManager;
-        ConfigParser(contextManager.servers);
+        ContextManager  http;
 
-        FD_ZERO(&master);
 
-        contextManager.openAndListen();
+        http.openAndListen();
+        http.ioMultiplexer();
 
-        // while (26)
-        // {
-        //     reads = master;
-        //     writes = master;
-
-        //     if (select(server.size() + clients.size() + 4, &reads, &writes, 0, 0) < 0)
-        //         throw "select() failed. " + std::to_string(errno);
-
-    
-        //     for (size_t i = 0; i < server.size(); ++i)
-        //     {
-        //         if (FD_ISSET(server[i].getSocket(), &reads))
-        //         {
-        //             server[i].acceptClient(clients);
-        //             std::cout << "socket : " << clients.back().getClSocket() << std::endl;
-        //         }
-        //     }
-
-        //     for (std::list<Client>::iterator it = clients.begin(); it != clients.end();)
-        //     {
-        //         if (FD_ISSET(it->getClSocket(), &reads))
-        //         {
-        //             std::cout << it->getIpAddress() << std::endl;
-        //             char    read[1024];
-        //             int     bytes_received = recv(it->getClSocket(), read, 1024, 0);
-        //             if (bytes_received <= 0)
-        //             {
-        //                 it->drop();
-        //                 clients.erase(it++);
-        //                 continue ;
-        //             }
-
-        //             std::cout << " ---- Request Begin ---" <<  std::endl;
-        //             std::cout << read << std::endl;
-        //             std::cout << " ---- Request End  ---" <<  std::endl;
-        
-        //             char buff[] =   "HTTP/1.1 200 OK\r\n"
-        //                             "Server: Allah Y7ssen L3wan\r\n"
-        //                             "Content-Length: 12\r\n"
-        //                             "Content-Type: text/plain\r\n\r\n"
-        //                             "HELLO WORLD!";
-        //             if (send(it->getClSocket(), buff, sizeof(buff), 0) < 0)
-        //                 perror("Send -> ");
-
-        //         }
-        //         ++it;
-        //     }
-        // }
 
 
 

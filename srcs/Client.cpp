@@ -219,8 +219,8 @@ void    Client::GetHandler()
 
 void    Client::drop()
 {
-    close(clSocket);
-    // FD_CLR(clSocket, &master);
+    // close(clSocket);
+    // FD_CLR(clSocket, &readmaster);
 }
 
 
