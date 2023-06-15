@@ -49,7 +49,7 @@ class   Server
 
         void        createSocket();
         void        startListening();
-        int         acceptClient(std::list<Client> &clients, size_t serverId);
+        int         acceptClient(std::list<Client> &clients);
         void        clear();
         void        attributeExaminer();
 

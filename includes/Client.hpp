@@ -22,39 +22,75 @@ extern fd_set          master;
 std::string     trimString(const std::string &str);
 int deleteDir(const char* path);
 
+class Server;
+
 class Client
 {
-    public:
+    private:
         int                                 clSocket;
         int                                 phase;
         int                                 fd;
-        unsigned int                        serverId;
-        size_t                              lenUpload;
+        Server                              &server;
+        size_t                              bytesUploaded;
         size_t                              seekg;
-        std::ifstream                       UploadFile;
+        std::ofstream                       uploadFile;
         std::string                         methodType;
         std::string                         URI;
         std::string                         buffer;
-        std::string                         resources;
+        std::string                         resource;
         std::map<std::string, std::string>  headerFields;
-        Location                            *location;
         std::string                         ipAddress;
+        Location                            *location;
     
 
-    Client(int clSocket, unsigned int serverId, const std::string &ipAddress) : 
-                clSocket(clSocket), phase(1), serverId(serverId), lenUpload(0), seekg(0), methodType(""), resources(""), ipAddress(ipAddress) {}
-    Client() 
-        : phase(1), lenUpload(0), seekg(0), methodType(""), resources("") {}
+    public:
+
+        Client(int clSocket, Server &server, const std::string &ipAddress) : 
+                    clSocket(clSocket), phase(1), server(server), bytesUploaded(0), seekg(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL) {}
+
+        Client  &operator= (const Client &cl)
+        {
+            clSocket = cl.clSocket;
+            phase = cl.phase;
+            fd = cl.fd;
+            bytesUploaded = cl.bytesUploaded;
+            seekg = cl.seekg;
+            methodType = cl.methodType;
+            URI = cl.URI;
+            buffer = cl.buffer;
+            resource = cl.resource;
+            headerFields = cl.headerFields;
+            location = cl.location;
+            ipAddress = cl.ipAddress;
+        
+            return *this;
+        }
+
+        Client(const Client &cl) : server(cl.server)
+        {
+            *this = cl;
+        }
+
+        ~Client() {};
+
+        void                parse();
+        void                upload();
+        void                PostHandler();
+        void                DeleteHandler();
+        void                GetHandler();
+        std::string         initializeupload();
+        void                drop();
 
 
-    void            parse();
-    void            uploadFile();
-    void            PostHandler();
-    void            DeleteHandler();
-    void            GetHandler();
-    void            drop();
-    std::string     initializeUploadFile();
-    std::string     getRsouces() {return resources;}
+        /*                              setters                                         */
+        // void    setResource();
+        // void    setLocation();
+        // void    setIpAddress();
+
+        /*                              getters                                         */
+        int                 getClSocket() {return clSocket; }
+        const std::string   &getResource() {return resource; }
+        const std::string   &getIpAddress() { return ipAddress; }
 };
 
 #endif

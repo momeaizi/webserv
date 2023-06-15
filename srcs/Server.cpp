@@ -52,7 +52,7 @@ void         Server::startListening()
 }
 
 
-int         Server::acceptClient(std::list<Client> &clients, size_t serverId)
+int         Server::acceptClient(std::list<Client> &clients)
 {
     struct sockaddr_storage client_address;
     socklen_t               client_len = sizeof(client_address);
@@ -67,7 +67,7 @@ int         Server::acceptClient(std::list<Client> &clients, size_t serverId)
 
     getnameinfo((struct sockaddr*)&client_address, client_len, address_buffer, sizeof(address_buffer), 0, 0, NI_NUMERICHOST);
 
-    clients.push_back(Client(socket_client, serverId, address_buffer));
+    clients.push_back(Client(socket_client, *this, address_buffer));
 
     FD_SET(socket_client, &master);
 

@@ -91,7 +91,7 @@ void    testParsing()
 
 int main()
 {
-    // testParsing();
+    testParsing();
 
 
     try
@@ -128,18 +128,18 @@ int main()
             {
                 if (FD_ISSET(server[i].getSocket(), &reads))
                 {
-                    server[i].acceptClient(clients, i);
-                    std::cout << "socket : " << clients.back().clSocket << std::endl;
+                    server[i].acceptClient(clients);
+                    std::cout << "socket : " << clients.back().getClSocket() << std::endl;
                 }
             }
 
             for (std::list<Client>::iterator it = clients.begin(); it != clients.end();)
             {
-                if (FD_ISSET(it->clSocket, &reads))
+                if (FD_ISSET(it->getClSocket(), &reads))
                 {
-                    std::cout << it->ipAddress << std::endl;
+                    std::cout << it->getIpAddress() << std::endl;
                     char    read[1024];
-                    int     bytes_received = recv(it->clSocket, read, 1024, 0);
+                    int     bytes_received = recv(it->getClSocket(), read, 1024, 0);
                     if (bytes_received <= 0)
                     {
                         it->drop();
@@ -156,7 +156,7 @@ int main()
                                     "Content-Length: 12\r\n"
                                     "Content-Type: text/plain\r\n\r\n"
                                     "HELLO WORLD!";
-                    if (send(it->clSocket, buff, sizeof(buff), 0) < 0)
+                    if (send(it->getClSocket(), buff, sizeof(buff), 0) < 0)
                         perror("Send -> ");
 
                 }
