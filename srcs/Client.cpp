@@ -39,7 +39,7 @@ void runCGI()
 
 }
 
-std::string  Client::initializeUploadFile()
+std::string  Client::initializeupload()
 {
     std::string FileName;
 
@@ -51,14 +51,14 @@ std::string  Client::initializeUploadFile()
     FileName += std::to_string(gmtm->tm_hour + 5) + ":";
     FileName += std::to_string(gmtm->tm_min + 30) + ":";
     FileName += std::to_string(gmtm->tm_sec);
-    // this->UploadFile.open(FileName);
+    // this->uploadFile.open(FileName);
     return FileName;
 }
 
-void Client::uploadFile()
+void Client::upload()
 {
-    if (!this->lenUpload)
-        this->UploadFile.open(initializeUploadFile());
+    if (!this->bytesUploaded)
+        this->uploadFile.open(initializeupload());
 
     std::ifstream inputFile("filename.txt"); // recv
     inputFile.seekg(this->seekg + 6, std::ios::cur); // recv
@@ -68,19 +68,19 @@ void Client::uploadFile()
     char                                buffer[1024];
     size_t ContentLength = stoi(this->headerFields["Content-Length"]);
     size_t                              bytes = 1024;
-    if (lenUpload >= ContentLength)
+    if (bytesUploaded >= ContentLength)
         return ;
-    if (ContentLength - lenUpload < 1024) bytes = ContentLength -  str.size();
+    if (ContentLength - bytesUploaded < 1024) bytes = ContentLength -  str.size();
     inputFile.read(buffer, bytes);
     str   = std::string(buffer, bytes);
-    lenUpload += bytes;
-    if (lenUpload > ContentLength)
+    bytesUploaded += bytes;
+    if (bytesUploaded > ContentLength)
     {
         this->buffer = str.substr(ContentLength);
         str = str.substr(0, ContentLength);
     }
-    UploadFile << str;
-    UploadFile.close();
+    uploadFile << str;
+    uploadFile.close();
 }
 
 void Client::parse()
@@ -137,23 +137,23 @@ void Client::PostHandler()
 {
     if (location->getUpload() != "")
     {
-        uploadFile();
+        upload();
         send_201();
     }
-    if (!ft::isPathExists(resources))
+    if (!ft::isPathExists(resource))
         send_404();
-    if (ft::isDirectory(resources)) // create func
+    if (ft::isDirectory(resource)) // create func
     {
-        if (!hasSlash(resources))
+        if (!hasSlash(resource))
             send_301();
-        std::string filePath = resources;
+        std::string filePath = resource;
         if (hasIndex(location->getIndex()))
             filePath += location->getIndex();
         else
             filePath += "index.html";
         if (!ft::isFile(filePath))
             send_403();
-        resources = filePath;
+        resource = filePath;
     }
     if (!location->locationHasCgi())
         send_403();
@@ -180,26 +180,26 @@ int deleteDir(const char* path)
 
 void    Client::DeleteHandler()
 {
-    if (ft::isFile(resources))
+    if (ft::isFile(resource))
     {
-        remove(resources.data());
+        remove(resource.data());
         send_204();
     }
-    if (deleteDir(resources.data()))
+    if (deleteDir(resource.data()))
         send_204();
-    if (access(resources.data(), W_OK))
+    if (access(resource.data(), W_OK))
         send_500();
     send_403();
 }
 
 void    Client::GetHandler()
 {
-    if (getRsouces() == "") send_404();
-    if (ft::isDirectory(resources))
+    if (getResource() == "") send_404();
+    if (ft::isDirectory(resource))
     {
-        if (!hasSlash(resources))
+        if (!hasSlash(resource))
             send_301();
-        std::string filePath = resources;
+        std::string filePath = resource;
         if(hasIndex(location->getIndex()))
                 filePath += location->getIndex();
         else
@@ -210,23 +210,30 @@ void    Client::GetHandler()
                 send_200();
             send_403();
         }
-        resources = filePath;
+        resource = filePath;
     }
     if (!location->locationHasCgi())
         send_200();
     runCGI();
 }
 
-int main()
+void    Client::drop()
 {
-    Client obj;
-    while (obj.phase)
-        obj.parse();
-    obj.uploadFile();
-    std:: cout << std::endl << "RESPONS" << std::endl;
-    std:: cout << "_________________" << std::endl;
-    std::cout << "method is : " <<  obj.methodType << std::endl << "URI: " << obj.URI << " " << std::endl;
-    std:: cout << "_________________" << std::endl;
-    for(auto& el:obj.headerFields)
-        std::cout << el.first << "\n" << el.second << std::endl<< std::endl;
+    close(clSocket);
+    FD_CLR(clSocket, &master);
 }
+
+
+// int main()
+// {
+//     Client obj;
+//     while (obj.phase)
+//         obj.parse();
+//     obj.upload();
+//     std:: cout << std::endl << "RESPONS" << std::endl;
+//     std:: cout << "_________________" << std::endl;
+//     std::cout << "method is : " <<  obj.methodType << std::endl << "URI: " << obj.URI << " " << std::endl;
+//     std:: cout << "_________________" << std::endl;
+//     for(auto& el:obj.headerFields)
+//         std::cout << el.first << "\n" << el.second << std::endl<< std::endl;
+// }
