@@ -1,4 +1,4 @@
-#include "Server.hpp"
+#include "../includes/Server.hpp"
 
 
 void        Server::createSocket()
@@ -75,14 +75,6 @@ int         Server::acceptClient(std::list<Client> &clients, size_t serverId)
 }
 
 
-void         Server::clear()
-{
-
-    socket_listen = -1;
-    port.clear();
-    hostName.clear();
-    configAttrs.clear();
-}
 
 Server::Server() : socket_listen(-1) {}
 
@@ -117,8 +109,22 @@ Server::~Server()
     clear();
 }
 
+void         Server::clear()
+{
 
+    socket_listen = -1;
+    port.clear();
+    hostName.clear();
+    configAttrs.clear();
+}
 
+void        Server::attributeExaminer()
+{
+    if (!port.length())
+        throw "port is missing!";
+    if (!hostName.length())
+        throw "host is missing!";
+}
 
 void    Server::setHostName(std::vector<std::string> &tokens, unsigned int lineNumber)
 {
@@ -133,6 +139,35 @@ void    Server::setPort(std::vector<std::string> &tokens, unsigned int lineNumbe
     if (tokens.size() != 2)
         throw "invalid number of arguments in \"port\" directive in serv.conf:" + std::to_string(lineNumber);
 
+    if (!containsOnlyDigits(tokens[1]))
+        throw "invalid port number \"" + tokens[1] + "\"";
     port = tokens[1];
 }
 
+void        Server::setSocket(int socket_listen)
+{
+    this->socket_listen = socket_listen;
+}
+void        Server::addConfigAttr(const ConfigAttr &configAttr)
+{
+    configAttrs[hostName] = configAttr;
+}
+
+const std::string                       &Server::getHostName() const
+{
+    return hostName;
+}
+const std::string                       &Server::getPort() const
+{
+    return port;
+}
+
+const int                               &Server::getSocket() const
+{
+    return socket_listen;
+}
+
+const std::map<std::string, ConfigAttr> &Server::getConfigAttrs() const
+{
+    return configAttrs;
+}

@@ -1,4 +1,4 @@
-#include "ContextManager.hpp"
+#include "../includes/ContextManager.hpp"
 
 
 
@@ -19,7 +19,8 @@ ContextManager::ContextManager(const char *configFileName) : configFIle(configFi
 
 int	ContextManager::parseLocation(Location &location)
 {
-
+	if (tokens.size() != 2)
+		throw "invalid number of arguments in \"location\" directive in serv.conf:" + std::to_string(lineNumber);
 
 	while (std::getline(configFIle, buff))
 	{
@@ -53,23 +54,35 @@ int	ContextManager::parseLocation(Location &location)
 
 }
 
+void	ContextManager::addServer()
+{
+
+	if (servers.size()) // fill out the last server with its config attributes
+	{
+		servers.back().addConfigAttr(configAttr);
+		servers.back().attributeExaminer();
+	}
+
+	if (servers.size() > 1 && portServer.count(servers.back().getPort())) // if a server is already using the same port as this server then merge them
+	{
+		unsigned int	index = portServer[servers.back().getPort()];
+		if (servers[index].getHostName() == servers.back().getHostName())
+			throw "\"" + servers.back().getHostName() + "\" already exist on the same port!";
+		servers[index] += servers.back();
+		servers.pop_back();
+	}
+	else if (servers.size()) // if no server is using the same port as this server then save its index in the memo "portServer"
+		portServer[servers.back().getPort()] = servers.size() - 1;
+
+
+}
+
 int	 ContextManager::parseServer()
 {
 	if (trimString(buff) == "server")
 	{
-		if (servers.size()) // fill out the last server with its config attributes
-			servers.back().configAttrs[servers.back().hostName] = configAttr;
 
-		if (servers.size() > 1 && portServer.count(servers.back().port)) // if a server is already using the same port as this server then merge them
-		{
-			unsigned int	index = portServer[servers.back().port];
-			servers[index] += servers.back();
-			servers.pop_back();
-		}
-		else if (servers.size()) // if no server is using the same port as this server then save its index in the memo "portServer"
-			portServer[servers.back().port] = servers.size() - 1;
-
-
+		addServer();
 		servers.push_back(Server()); // push the server to the set
 		configAttr.clear();
 		return 1;
@@ -81,9 +94,6 @@ int	 ContextManager::parseServer()
 		throw "unknown directive in serv.conf:" + std::to_string(lineNumber);
 	else if (tokens[0] == "\tlocation")
 	{
-		if (tokens.size() != 2)
-			throw "invalid number of arguments in \"location\" directive in serv.conf:" + std::to_string(lineNumber);
-
 		if (!parseLocation(configAttr.locations[tokens[1]]))
 			return 0;
 		parseServer();
@@ -123,17 +133,6 @@ void	ContextManager::parseConfigFIle()
 			return ;
 	}
 
-	if (servers.size()) // fill out the last server with its config attributes
-		servers.back().configAttrs[servers.back().hostName] = configAttr;
-
-	if (servers.size() > 1 && portServer.count(servers.back().port)) // if a server is already using the same port as this server then merge them
-	{
-		unsigned int	index = portServer[servers.back().port];
-		servers[index] += servers.back();
-		servers.pop_back();
-	}
-	else if (servers.size()) // if no server is using the same port as this server then save its index in the memo "portServer"
-		portServer[servers.back().port] = servers.size() - 1;
-
+	addServer();
 
 }

@@ -5,9 +5,9 @@
 #include <map>
 #include <set>
 #include <list>
-#include "ContextManager.hpp"
-#include "Server.hpp"
-#include "Client.hpp"
+#include "../includes/ContextManager.hpp"
+#include "../includes/Server.hpp"
+#include "../includes/Client.hpp"
 
 
 fd_set          master;
@@ -22,41 +22,41 @@ void    testParsing()
         std::cout << servers.size() << std::endl;
         for (size_t i = 0; i < servers.size(); ++i)
         {
-            std::cout << "host " << servers[i].hostName << std::endl;
-            std::cout << "port " << servers[i].port << std::endl;
-            std::cout << "size : " << servers[i].configAttrs.size() << std::endl;
-            std::map<std::string, ConfigAttr>::iterator it = servers[i].configAttrs.begin();
-            for (; it != servers[i].configAttrs.end(); ++it)
+            std::cout << "host " << servers[i].getHostName() << std::endl;
+            std::cout << "port " << servers[i].getPort() << std::endl;
+            std::cout << "size : " << servers[i].getConfigAttrs().size() << std::endl;
+            std::map<std::string, ConfigAttr>::const_iterator it = servers[i].getConfigAttrs().begin();
+            for (; it != servers[i].getConfigAttrs().end(); ++it)
             {
                 std::cout << "Host host " << it->first << std::endl;
-                std::cout << "clientMaxBodySize " << it->second.clientMaxBodySize << std::endl;
+                std::cout << "clientMaxBodySize " << it->second.getClientMaxBodySize() << std::endl;
 
-                std::map<std::string, Location>::iterator it_ = it->second.locations.begin();
+                std::map<std::string, Location>::const_iterator it_ = it->second.getLocations().begin();
 
-                for (; it_ != it->second.locations.end(); ++it_)
+                for (; it_ != it->second.getLocations().end(); ++it_)
                 {
                     std::cout << "location " << it_->first << std::endl;
-                    std::cout << "\tautoindex " << it_->second.autoindex << std::endl;
-                    std::cout << "\troot " << it_->second.root << std::endl;
-                    std::cout << "\tindex " << it_->second.index << std::endl;
-                    std::cout << "\tupload " << it_->second.upload << std::endl;
-                    std::cout << "\tredirection " << it_->second.redirection.first << ", " << it_->second.redirection.second << std::endl;
+                    std::cout << "\tautoindex " << it_->second.getAutoindex() << std::endl;
+                    std::cout << "\troot " << it_->second.getRoot() << std::endl;
+                    std::cout << "\tindex " << it_->second.getIndex() << std::endl;
+                    std::cout << "\tupload " << it_->second.getUpload() << std::endl;
+                    std::cout << "\tredirection " << it_->second.getRedirection().first << ", " << it_->second.getRedirection().second << std::endl;
                     std::cout << "\tallowed methods " << std::endl;
 
-                    std::set<std::string>::iterator it__ = it_->second.allowedMethods.begin();
-                    for (; it__ != it_->second.allowedMethods.end(); ++it__)
+                    std::set<std::string>::iterator it__ = it_->second.getAllowedMethods().begin();
+                    for (; it__ != it_->second.getAllowedMethods().end(); ++it__)
                         std::cout << "\t\t" << *it__ << std::endl;
 
                     
                     std::cout << "\tCGI" << std::endl;
-                    std::map<std::string, std::string>::iterator itt = it_->second.cgi.begin();
-                    for (; itt != it_->second.cgi.end(); ++itt)
+                    std::map<std::string, std::string>::const_iterator itt = it_->second.getCgi().begin();
+                    for (; itt != it_->second.getCgi().end(); ++itt)
                         std::cout << "\t\t" << itt->first << " " << itt->second << std::endl;
 
 
                     std::cout << "\tError Pages" << std::endl;
-                    std::map<int, std::string>::iterator it___ = it->second.errorPages.begin();
-                    for (; it___ != it->second.errorPages.end(); ++it___)
+                    std::map<int, std::string>::const_iterator it___ = it->second.getErrorPages().begin();
+                    for (; it___ != it->second.getErrorPages().end(); ++it___)
                         std::cout << "\t\t" << it___->first << " " << it___->second << std::endl;
                 }
                 std::cout << "*************************Host-End*********************" << std::endl;
@@ -126,7 +126,7 @@ int main()
     
             for (size_t i = 0; i < server.size(); ++i)
             {
-                if (FD_ISSET(server[i].socket_listen, &reads))
+                if (FD_ISSET(server[i].getSocket(), &reads))
                 {
                     server[i].acceptClient(clients, i);
                     std::cout << "socket : " << clients.back().clSocket << std::endl;
