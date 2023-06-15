@@ -46,14 +46,14 @@ class Client
         : phase(1), lenUpload(0), seekg(0), methodType(""), resources("") {}
 
 
-    void    parse();
-    void    uploadFile();
-    void    PostHandler();
-    void    DeleteHandler();
-    void    GetHandler();
-    void    drop();
-    std::ifstream    initializeUploadFile();
-    std::string getRsouces() {return resources;}
+    void            parse();
+    void            uploadFile();
+    void            PostHandler();
+    void            DeleteHandler();
+    void            GetHandler();
+    void            drop();
+    std::string     initializeUploadFile();
+    std::string     getRsouces() {return resources;}
 };
 
 #endif

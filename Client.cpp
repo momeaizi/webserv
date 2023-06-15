@@ -39,7 +39,7 @@ void runCGI()
 
 }
 
-std::ifstream  Client::initializeUploadFile()
+std::string  Client::initializeUploadFile()
 {
     std::string FileName;
 
@@ -52,13 +52,13 @@ std::ifstream  Client::initializeUploadFile()
     FileName += std::to_string(gmtm->tm_min + 30) + ":";
     FileName += std::to_string(gmtm->tm_sec);
     // this->UploadFile.open(FileName);
-    return std::ifsteam(FileName);
+    return FileName;
 }
 
 void Client::uploadFile()
 {
     if (!this->lenUpload)
-        this->Upload = initializeUpload();
+        this->UploadFile.open(initializeUploadFile());
 
     std::ifstream inputFile("filename.txt"); // recv
     inputFile.seekg(this->seekg + 6, std::ios::cur); // recv
