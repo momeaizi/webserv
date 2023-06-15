@@ -13,7 +13,8 @@ SRCS =	srcs/main.cpp \
 		srcs/Location.cpp \
 		srcs/errors.cpp \
 		srcs/filesCont.cpp \
-		srcs/string.cpp
+		srcs/string.cpp \
+		srcs/ConfigParser.cpp
 
 OBJS:=$(SRCS:.cpp=.o)
 

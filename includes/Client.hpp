@@ -16,7 +16,6 @@
 
 # define MAX 2043
 
-extern fd_set          master;
 
 
 std::string     trimString(const std::string &str);

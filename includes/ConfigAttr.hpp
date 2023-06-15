@@ -7,7 +7,7 @@
 #include "string.hpp"
 
 
-class ContextManager;
+class ConfigParser;
 
 class ConfigAttr
 {
@@ -19,7 +19,7 @@ class ConfigAttr
 
     public:
 
-        friend class ContextManager;
+        friend class ConfigParser;
 
         ConfigAttr();
         ConfigAttr(const ConfigAttr &configAttr);

@@ -10,30 +10,21 @@
 #include "Server.hpp"
 #include "Location.hpp"
 #include "ConfigAttr.hpp"
+#include "ConfigParser.hpp"
+#include "string.hpp"
 
-std::string                 trimString(const std::string &str);
-std::vector<std::string>    splitString(const std::string& str, char delimiter);
-bool                        containsOnlyWhitespaces(const std::string& str);
-
-
+fd_set  readMaster;
+fd_set  writeMaster;
 class   ContextManager
 {
     public:
-        unsigned int                        lineNumber;
-        std::string                         buff;
-        std::vector<std::string>            tokens;
-        std::ifstream                       configFIle;
         std::vector<Server>                 servers;
-        std::map<std::string, unsigned int> portServer;
-        ConfigAttr                          configAttr;
+        std::list<Client>                   clients;
+        fd_set  readMatser;
+        fd_set  writeMatser;
 
-
-        ContextManager(const char *configFileName);
-
-        void    parseConfigFIle();
-        int     parseServer();
-        void	addServer();
-        int     parseLocation(Location &location);
+        ContextManager();
+        void    openAndListen();
 
 };
 

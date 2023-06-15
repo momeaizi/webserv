@@ -1,7 +1,7 @@
 #include "../includes/Server.hpp"
 
 
-void        Server::createSocket()
+void        Server::openSocket()
 {
     struct addrinfo hints;
     struct addrinfo *bind_address;
@@ -36,7 +36,7 @@ void        Server::createSocket()
 
     freeaddrinfo(bind_address);
 
-    FD_SET(socket_listen, &master);
+    FD_SET(socket_listen, &readMaster);
 }
 
 
@@ -69,7 +69,7 @@ int         Server::acceptClient(std::list<Client> &clients)
 
     clients.push_back(Client(socket_client, *this, address_buffer));
 
-    FD_SET(socket_client, &master);
+    FD_SET(socket_client, &readMaster);
 
     return 0;
 }

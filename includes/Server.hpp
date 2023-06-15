@@ -25,8 +25,8 @@
 
 
 
-extern fd_set          master;
-
+extern fd_set  readMaster;
+extern fd_set  writeMaster;
 
 
 class   Server
@@ -47,7 +47,7 @@ class   Server
         Server  &operator+= (const Server& serv);
         ~Server();
 
-        void        createSocket();
+        void        openSocket();
         void        startListening();
         int         acceptClient(std::list<Client> &clients);
         void        clear();

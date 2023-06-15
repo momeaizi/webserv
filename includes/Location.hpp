@@ -9,7 +9,7 @@
 #include "string.hpp"
 
 
-class   Location
+struct   Location
 {
     private:
         bool                                autoindex;
