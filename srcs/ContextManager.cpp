@@ -32,19 +32,19 @@ int	ContextManager::parseLocation(Location &location)
 		tokens = splitString(buff, ' ');
 
 		if (tokens[0] == "\t\troot")
-			location.setRoot(tokens, lineNumber);  // SET ROOT ATTRIBUTE OF THE SERVER
+			location.setRoot(tokens, lineNumber);  // SET ROOT
 		else if (tokens[0] == "\t\tindex")
-			location.setIndex(tokens, lineNumber); // SET INDEX ATTRIBUTE OF THE SERVER
+			location.setIndex(tokens, lineNumber); // SET INDEX
 		else if (tokens[0] == "\t\tupload_pass")
-			location.setUpload(tokens, lineNumber); // SET UPLOAD ATTRIBUTE OF THE SERVER
+			location.setUpload(tokens, lineNumber); // SET UPLOAD
 		else if (tokens[0] == "\t\tcgi_pass")
-			location.setCgi(tokens, lineNumber); // SET CGI ATTRIBUTE OF THE SERVER
+			location.setCgi(tokens, lineNumber); // SET CGI
 		else if (tokens[0] == "\t\tautoindex")
-			location.setAutoindex(tokens, lineNumber); // SET AUTOINDEX ATTRIBUTE OF THE SERVER
+			location.setAutoindex(tokens, lineNumber); // SET AUTOINDEX
 		else if (tokens[0] == "\t\tallow_methods")
-			location.setAllowedMethods(tokens, lineNumber); // SET ALLOWEDMETHODS ATTRIBUTE OF THE SERVER
+			location.setAllowedMethods(tokens, lineNumber); // SET ALLOWEDMETHODS
 		else if (tokens[0] == "\t\treturn")
-			location.setRedirection(tokens, lineNumber); // SET REDIRECCTION  ATTRIBUTE OF THE SERVER
+			location.setRedirection(tokens, lineNumber); // SET REDIRECCTION 
 		else
 			return 1; // DIRECTIVE DOESN'T BELONGS TO THE LOCATION DIRECTIVE
 
