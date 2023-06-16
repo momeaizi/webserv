@@ -2,23 +2,10 @@
 
 
 
-ContextManager::ContextManager(const char *configFileName) : configFIle(configFileName)
-{
-	if (!configFIle.is_open())
-		throw "config file can't be opened!";
-		
-	lineNumber = 0;
-	parseConfigFIle();
 
-	tokens.clear();
-	buff.clear();
-	configFIle.close();
-	configFIle.clear();
-		
-}
-
-int	ContextManager::parseLocation(Location &location)
+ContextManager::ContextManager()
 {
+<<<<<<< HEAD
 	if (tokens.size() != 2)
 		throw "invalid number of arguments in \"location\" directive in serv.conf:" + std::to_string(lineNumber);
 
@@ -52,87 +39,80 @@ int	ContextManager::parseLocation(Location &location)
 
 	return 0; // THE END OF THE FILE
 
-}
-
-void	ContextManager::addServer()
-{
-
-	if (servers.size()) // fill out the last server with its config attributes
-	{
-		servers.back().addConfigAttr(configAttr);
-		servers.back().attributeExaminer();
-	}
-
-	if (servers.size() > 1 && portServer.count(servers.back().getPort())) // if a server is already using the same port as this server then merge them
-	{
-		unsigned int	index = portServer[servers.back().getPort()];
-		if (servers[index].getHostName() == servers.back().getHostName())
-			throw "\"" + servers.back().getHostName() + "\" already exist on the same port!";
-		servers[index] += servers.back();
-		servers.pop_back();
-	}
-	else if (servers.size()) // if no server is using the same port as this server then save its index in the memo "portServer"
-		portServer[servers.back().getPort()] = servers.size() - 1;
-
-
-}
-
-int	 ContextManager::parseServer()
-{
-	if (trimString(buff) == "server")
-	{
-
-		addServer();
-		servers.push_back(Server()); // push the server to the set
-		configAttr.clear();
-		return 1;
-	}
-
-
-
-	if (!servers.size())
-		throw "unknown directive in serv.conf:" + std::to_string(lineNumber);
-	else if (tokens[0] == "\tlocation")
-	{
-		if (!parseLocation(configAttr.locations[tokens[1]]))
-			return 0;
-		parseServer();
-		return 1;
-	}
-
-	if (tokens[0] == "\thost")
-		servers.back().setHostName(tokens, lineNumber);
-	else if (tokens[0] == "\tport")
-		servers.back().setPort(tokens, lineNumber);
-	else if (tokens[0] == "\tclient_max_body_size")
-		configAttr.setClientMaxBodySize(tokens, lineNumber);
-
-	else if (tokens[0] == "\terror_page")
-		configAttr.setErrorPages(tokens, lineNumber);
-	else
-		throw "unknown directive in serv.conf:" + std::to_string(lineNumber);
-
-
-	return 1;
+=======
+	ConfigParser	configparser(servers);
+	FD_ZERO(&readMaster);
+	FD_ZERO(&writeMaster);
+>>>>>>> master
 }
 
 
-void	ContextManager::parseConfigFIle()
+void    ContextManager::openAndListen()
 {
-	while (std::getline(configFIle, buff))
+	for (size_t i = 0 ; i < servers.size(); ++i)
 	{
-		++lineNumber;
-
-		if (!buff.length() || containsOnlyWhitespaces(buff))
-			continue ;
-
-		tokens = splitString(buff, ' ');
-
-
-		if (!parseServer())
-			return ;
+		servers[i].openSocket();
 	}
 
-	addServer();
+	for (size_t i = 0 ; i < servers.size(); ++i)
+	{
+		servers[i].startListening();
+	}
+}
 
+
+void    ContextManager::ioMultiplexer()
+{
+	fd_set	reads;
+	fd_set	writes;
+
+	while (26)
+	{
+		reads = readMaster;
+		writes = writeMaster;
+
+		if (select(servers.size() + clients.size() + 4, &reads, &writes, 0, 0) < 0)
+			throw "select() failed. " + std::to_string(errno);
+
+
+		for (size_t i = 0; i < servers.size(); ++i)
+		{
+			if (FD_ISSET(servers[i].getSocket(), &reads))
+			{
+				servers[i].acceptClient(clients);
+				std::cout << "socket : " << clients.back().getClSocket() << std::endl;
+			}
+		}
+
+		for (std::list<Client>::iterator it = clients.begin(); it != clients.end();)
+		{
+			if (FD_ISSET(it->getClSocket(), &reads))
+			{
+				std::cout << it->getIpAddress() << std::endl;
+				char    read[1024];
+				int     bytes_received = recv(it->getClSocket(), read, 1024, 0);
+				if (bytes_received <= 0)
+				{
+					close(it->getClSocket());
+    				FD_CLR(it->getClSocket(), &readMaster);
+					clients.erase(it++);
+					continue ;
+				}
+
+				std::cout << " ---- Request Begin ---" <<  std::endl;
+				std::cout << read << std::endl;
+				std::cout << " ---- Request End  ---" <<  std::endl;
+	
+				char buff[] =   "HTTP/1.1 200 OK\r\n"
+								"Server: Allah Y7ssen L3wan\r\n"
+								"Content-Length: 12\r\n"
+								"Content-Type: text/plain\r\n\r\n"
+								"HELLO WORLD!";
+				if (send(it->getClSocket(), buff, sizeof(buff), 0) < 0)
+					perror("Send -> ");
+
+			}
+			++it;
+		}
+	}
 }
