@@ -95,10 +95,10 @@ int	 ConfigParser::parseServer()
 	else if (tokens[0] == "\tport")
 		servers.back().setPort(tokens, lineNumber);
 	else if (tokens[0] == "\tclient_max_body_size")
-		servers.back()..setClientMaxBodySize(tokens, lineNumber);
+		servers.back().setClientMaxBodySize(tokens, lineNumber);
 
 	else if (tokens[0] == "\terror_page")
-		servers.back()..setErrorPages(tokens, lineNumber);
+		servers.back().setErrorPages(tokens, lineNumber);
 	else
 		throw "unknown directive in serv.conf:" + std::to_string(lineNumber);
 

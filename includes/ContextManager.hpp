@@ -14,9 +14,11 @@
 
 extern fd_set  readMaster;
 extern fd_set  writeMaster;
+
 class   ContextManager
 {
     public:
+        char	                            buffer[1024];
         std::vector<Server>                 servers;
         std::list<Client>                   clients;
         fd_set  readMatser;
