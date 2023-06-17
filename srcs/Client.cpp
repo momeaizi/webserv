@@ -59,27 +59,20 @@ void Client::upload()
     if (!this->bytesUploaded)
         this->uploadFile.open(initializeupload());
 
-    std::ifstream inputFile("filename.txt"); // recv
-    inputFile.seekg(this->seekg + 6, std::ios::cur); // recv
-
-
     std::string                         str;
-    char                                buffer[1024];
     size_t ContentLength = stoi(this->headerFields["Content-Length"]);
-    size_t                              bytes = 1024;
     if (bytesUploaded >= ContentLength)
-        return ;
-    if (ContentLength - bytesUploaded < 1024) bytes = ContentLength -  str.size();
-    inputFile.read(buffer, bytes);
-    str   = std::string(buffer, bytes);
-    bytesUploaded += bytes;
-    if (bytesUploaded > ContentLength)
     {
-        this->buffer = str.substr(ContentLength);
-        str = str.substr(0, ContentLength);
+        uploadFile.close();
+        phase = 2;
+        return ;
     }
+    if (this->buffer.size() + bytesUploaded <= ContentLength)
+        str = buffer;
+    else
+        str = buffer.substr(0, ContentLength - bytesUploaded);
     uploadFile << str;
-    uploadFile.close();
+    buffer = buffer.substr(str.size());
 }
 
 void Client::GetFromFile()
