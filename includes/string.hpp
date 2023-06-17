@@ -16,7 +16,8 @@ bool                        containsOnlyWhitespaces(const std::string& str);
 bool                        containsOnlyDigits(const std::string& str);
 std::vector<std::string>    splitString(const std::string& str, char delimiter);
 std::string                 trimString(const std::string &str);
-std::list<std::string>      getlines(int phase);
-std::string                 getRemainder();
+std::list<std::string> getlines(std::string  &str);
+// std::list<std::string>      getlines(int phase);
+// std::string                 getRemainder();
 
 #endif

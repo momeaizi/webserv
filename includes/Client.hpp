@@ -8,6 +8,7 @@
 # include <unistd.h>
 # include <fstream>
 # include <list>
+# include <fcntl.h>
 # include <dirent.h>
 # include <cstdio>
 # include <string>
@@ -47,7 +48,7 @@ class Client
 
         Client(int clSocket, Server &server, const std::string &ipAddress) : 
                     clSocket(clSocket), phase(1), server(server), bytesUploaded(0), seekg(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL) {}
-
+        Client(){};
         Client  &operator= (const Client &cl)
         {
             clSocket = cl.clSocket;
@@ -78,6 +79,7 @@ class Client
         void                PostHandler();
         void                DeleteHandler();
         void                GetHandler();
+        void                GetFromFile();
         std::string         initializeupload();
         void                drop();
 

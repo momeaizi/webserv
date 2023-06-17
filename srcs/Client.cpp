@@ -51,7 +51,6 @@ std::string  Client::initializeupload()
     FileName += std::to_string(gmtm->tm_hour + 5) + ":";
     FileName += std::to_string(gmtm->tm_min + 30) + ":";
     FileName += std::to_string(gmtm->tm_sec);
-    // this->uploadFile.open(FileName);
     return FileName;
 }
 
@@ -83,16 +82,23 @@ void Client::upload()
     uploadFile.close();
 }
 
+void Client::GetFromFile()
+{
+    char    buff[1024];
+    int     Rfd = open(resource.data(), O_RDONLY);
+    int  len = read(Rfd, buff, 1024);
+    if (len == -1) write(fd, buff, len);
+}
+
+
 void Client::parse()
 {
-
     std::string str;
-    std::string buffer;
     std::list<std::string> lines;
     std::list<std::string>::iterator it;
     size_t first;
 
-    lines = getlines(0);
+    lines = getlines(this->buffer);
     if (lines.empty())
         return ;
     for (it = lines.begin(); it != lines.end(); it++)
@@ -101,7 +107,6 @@ void Client::parse()
         this->seekg += str.size() + 2;
         if (str == "")
         {
-            buffer = getRemainder();
             phase = 0; // request is finished
             return ;
         }
@@ -223,17 +228,11 @@ void    Client::drop()
     FD_CLR(clSocket, &master);
 }
 
+    // resource = "/Users/mskerba/Desktop/tes.cpp";
+    // fd = open("/Users/mskerba/Desktop/b",O_WRONLY);
 
 // int main()
 // {
 //     Client obj;
-//     while (obj.phase)
-//         obj.parse();
-//     obj.upload();
-//     std:: cout << std::endl << "RESPONS" << std::endl;
-//     std:: cout << "_________________" << std::endl;
-//     std::cout << "method is : " <<  obj.methodType << std::endl << "URI: " << obj.URI << " " << std::endl;
-//     std:: cout << "_________________" << std::endl;
-//     for(auto& el:obj.headerFields)
-//         std::cout << el.first << "\n" << el.second << std::endl<< std::endl;
+//     obj.GetFromFile();
 // }
