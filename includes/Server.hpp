@@ -27,6 +27,7 @@
 extern fd_set  readMaster;
 extern fd_set  writeMaster;
 
+class Client;
 
 class   Server
 {
@@ -49,11 +50,12 @@ class   Server
         Server  &operator= (const Server& serv);
         ~Server();
 
-        void        openSocket();
-        void        startListening();
-        int         acceptClient(std::list<Client> &clients);
-        void        clear();
-        void        attributeExaminer();
+        void                                openSocket();
+        void                                startListening();
+        int                                 acceptClient(std::list<Client> &clients);
+        void                                clear();
+        void                                attributeExaminer();
+        std::pair<std::string, Location*>   getMatchedLocation(const std::string &uri);
 
         /*                              setters                                         */
         void        setHostName(std::vector<std::string> &tokens, unsigned int lineNumber);

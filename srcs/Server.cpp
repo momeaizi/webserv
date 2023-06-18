@@ -70,6 +70,7 @@ int         Server::acceptClient(std::list<Client> &clients)
     clients.push_back(Client(socket_client, *this, address_buffer));
 
     FD_SET(socket_client, &readMaster);
+    FD_SET(socket_client, &writeMaster);
 
     return 0;
 }
@@ -111,13 +112,39 @@ void         Server::clear()
     hostName.clear();
 }
 
-void        Server::attributeExaminer()
+void    Server::attributeExaminer()
 {
     if (!port.length())
         throw "port is missing!";
     if (!hostName.length())
         throw "host is missing!";
 }
+
+
+std::pair<std::string, Location*>    Server::getMatchedLocation(const std::string &uri)
+{
+    size_t                                          max_len = 0;
+    size_t                                          i = 0;
+    std::pair<std::string, Location*>               location;
+    std::map<std::string, Location>::iterator   it = locations.begin();
+
+    for (; it != locations.end(); ++it)
+    {
+        for (i = 0; i < it->first.length() && i < uri.length(); ++i)
+        {
+            if (it->first[i] != uri[i])
+                break ;
+        }
+        if (i > max_len)
+        {
+            max_len = i;
+            location.first = it->first;
+            location.second = &it->second;
+        }
+    }
+    return location;
+}
+
 
 void    Server::setHostName(std::vector<std::string> &tokens, unsigned int lineNumber)
 {
