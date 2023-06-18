@@ -31,6 +31,7 @@ class Client
         int                                 clSocket;
         int                                 phase;
         int                                 fd;
+        int                                 chunked;
         Server                              &server;
         size_t                              bytesUploaded;
         size_t                              seekg;
@@ -41,13 +42,15 @@ class Client
         std::string                         resource;
         std::map<std::string, std::string>  headerFields;
         std::string                         ipAddress;
+        std::string                         respnse;
+        std::string                         boundary;
         Location                            *location;
     
 
     public:
 
         Client(int clSocket, Server &server, const std::string &ipAddress) : 
-                    clSocket(clSocket), phase(1), server(server), bytesUploaded(0), seekg(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL) {}
+                    clSocket(clSocket), phase(1), chunked(0), server(server), bytesUploaded(0), seekg(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL) {}
         Client(){};
         Client  &operator= (const Client &cl)
         {
@@ -76,6 +79,8 @@ class Client
 
         void                parse();
         void                upload();
+        void                chunkedUpload();
+        void                boundaryUpload();
         void                PostHandler();
         void                DeleteHandler();
         void                GetHandler();
