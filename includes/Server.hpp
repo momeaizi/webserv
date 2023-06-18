@@ -20,13 +20,12 @@
 #include <list>
 #include "Location.hpp"
 #include "Client.hpp"
-#include "ConfigAttr.hpp"
 
 
 
 
-extern fd_set          master;
-
+extern fd_set  readMaster;
+extern fd_set  writeMaster;
 
 
 class   Server
@@ -34,20 +33,23 @@ class   Server
     private:
 
         int                                                     socket_listen;
+        long long                                               clientMaxBodySize;
         std::string                                             port;
         std::string                                             hostName;
-        std::map<std::string, ConfigAttr>                       configAttrs;
+        std::map<std::string, Location>                         locations;
+        std::map<int, std::string>                              errorPages;
 
 
     public:
 
+        friend class ConfigParser;
+
         Server();
         Server(const Server &serv);
         Server  &operator= (const Server& serv);
-        Server  &operator+= (const Server& serv);
         ~Server();
 
-        void        createSocket();
+        void        openSocket();
         void        startListening();
         int         acceptClient(std::list<Client> &clients);
         void        clear();
@@ -57,13 +59,17 @@ class   Server
         void        setHostName(std::vector<std::string> &tokens, unsigned int lineNumber);
         void        setPort(std::vector<std::string> &tokens, unsigned int lineNumber);
         void        setSocket(int socket_listen);
-        void        addConfigAttr(const ConfigAttr &configAttr);
+        void        setErrorPages(std::vector<std::string> &tokens, unsigned int lineNumber);
+        void        setClientMaxBodySize(std::vector<std::string> &tokens, unsigned int lineNumber);
+
 
         /*                              getters                                         */
         const std::string                       &getHostName() const;
         const std::string                       &getPort() const;
         const int                               &getSocket() const;
-        const std::map<std::string, ConfigAttr> &getConfigAttrs() const;
+        const std::map<int, std::string>        &getErrorPages() const;
+        const long long                         &getClientMaxBodySize() const;
+        const std::map<std::string, Location>   &getLocations() const;
 
 };
 

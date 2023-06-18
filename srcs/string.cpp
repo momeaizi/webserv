@@ -29,30 +29,13 @@ std::string trim(const std::string& str, const std::string t)
 }
 
 
-std::list<std::string> getlines(int phase)
-{
-    static std::string        str;
-    static size_t             seekg = 0;                
-    std::string               sep;
+std::list<std::string> getlines(std::string  &str)
+{              
+    std::string             sep;
+    std::size_t             loc = 0;
     std::list<std::string>  lines;
-    char                      buffer[1024];
-    std::size_t               loc = 0;
-    int                       bytes;
-    // int                       fd;
 
-    if (phase)
-    {
-        lines.push_back(str);
-        return lines;
-    }
-    // bytes  = recv(fd, buffer, (size_t)buf);
-    std::ifstream inputFile("filename.txt");
-    bytes = buf;
-    inputFile.seekg(seekg, std::ios::cur);
-    inputFile.read(buffer, bytes);
-    seekg += bytes;
-    str   += std::string(buffer, bytes);
-    sep   = "\\r\n";
+    sep   = "\r\n";
     loc   = str.find(sep);
     while (loc != std::string::npos)
     {
@@ -65,10 +48,6 @@ std::list<std::string> getlines(int phase)
     return lines;
 }
 
-std::string getRemainder()
-{
-    return getlines(1).back();
-}
 
 std::string trimString(const std::string &str)
 {

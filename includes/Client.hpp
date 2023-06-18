@@ -16,7 +16,6 @@
 
 # define MAX 2043
 
-extern fd_set          master;
 
 
 std::string     trimString(const std::string &str);
@@ -26,13 +25,12 @@ class Server;
 
 class Client
 {
-    private:
+    public:
         int                                 clSocket;
         int                                 phase;
         int                                 fd;
         Server                              &server;
         size_t                              bytesUploaded;
-        size_t                              seekg;
         std::ofstream                       uploadFile;
         std::string                         methodType;
         std::string                         URI;
@@ -46,7 +44,7 @@ class Client
     public:
 
         Client(int clSocket, Server &server, const std::string &ipAddress) : 
-                    clSocket(clSocket), phase(1), server(server), bytesUploaded(0), seekg(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL) {}
+                    clSocket(clSocket), phase(1), server(server), bytesUploaded(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL) {}
 
         Client  &operator= (const Client &cl)
         {
@@ -54,7 +52,7 @@ class Client
             phase = cl.phase;
             fd = cl.fd;
             bytesUploaded = cl.bytesUploaded;
-            seekg = cl.seekg;
+            // seekg = cl.seekg;
             methodType = cl.methodType;
             URI = cl.URI;
             buffer = cl.buffer;
@@ -89,6 +87,7 @@ class Client
 
         /*                              getters                                         */
         int                 getClSocket() {return clSocket; }
+        int                 getPhase() {return phase; }
         const std::string   &getResource() {return resource; }
         const std::string   &getIpAddress() { return ipAddress; }
 };

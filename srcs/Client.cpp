@@ -61,7 +61,7 @@ void Client::upload()
         this->uploadFile.open(initializeupload());
 
     std::ifstream inputFile("filename.txt"); // recv
-    inputFile.seekg(this->seekg + 6, std::ios::cur); // recv
+    // inputFile.seekg(this->seekg + 6, std::ios::cur); // recv
 
 
     std::string                         str;
@@ -85,24 +85,24 @@ void Client::upload()
 
 void Client::parse()
 {
+    std::list<std::string>              lines;
+    std::list<std::string>::iterator    it;
+    size_t                              first;
 
-    std::string str;
-    std::string buffer;
-    std::list<std::string> lines;
-    std::list<std::string>::iterator it;
-    size_t first;
-
-    lines = getlines(0);
+    lines = getlines(this->buffer);
     if (lines.empty())
         return ;
+
     for (it = lines.begin(); it != lines.end(); it++)
     {
-        str = *it;
-        this->seekg += str.size() + 2;
+        std::cout << "lines.size()" << lines.size() << " lines[0] : " << *it;
+        std::string &str = *it;
+
         if (str == "")
         {
-            buffer = getRemainder();
-            phase = 0; // request is finished
+            std::cout << "parse is finished" << std::endl;
+            this->phase = 0; // request is finished
+            std::cout << "phase is changed -> " << this->phase << std::endl;
             return ;
         }
         if (this->methodType == "") 
@@ -123,10 +123,12 @@ void Client::parse()
         else
         {
             int index = str.find(":");
-            int len = str.length();
+            int len   = str.length();
             std::string   name = str.substr(0, index);
+
             if (this->headerFields.count(name) and index == -1)
                 return ;// send_400();
+
             std::string   val = str.substr(index + 1, len);
             headerFields [name] = trimString(val);
         }
@@ -219,8 +221,8 @@ void    Client::GetHandler()
 
 void    Client::drop()
 {
-    close(clSocket);
-    FD_CLR(clSocket, &master);
+    // close(clSocket);
+    // FD_CLR(clSocket, &readmaster);
 }
 
 
