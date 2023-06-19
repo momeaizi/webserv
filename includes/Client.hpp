@@ -50,11 +50,7 @@ class Client
     public:
 
         Client(int clSocket, Server &server, const std::string &ipAddress) : 
-<<<<<<< HEAD
                     clSocket(clSocket), phase(1), Rfd(-1), server(server), bytesUploaded(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL) {}
-=======
-                    clSocket(clSocket), phase(0), server(server), bytesUploaded(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)) {}
->>>>>>> 3b03b122bd2f54fa78a2cda6fd3aa2967c438c3c
 
         Client  &operator= (const Client &cl)
         {
@@ -89,13 +85,8 @@ class Client
         void                DeleteHandler();
         void                GetHandler();
         std::string         initializeupload();
-<<<<<<< HEAD
         void                drop();
         void                send_error(int error_status);
-=======
-        void                drop(fd_set &readMaster, fd_set &writeMaster);
-        void                clear();
->>>>>>> 3b03b122bd2f54fa78a2cda6fd3aa2967c438c3c
 
 
         /*                              setters                                         */
