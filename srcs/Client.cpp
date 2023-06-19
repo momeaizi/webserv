@@ -17,7 +17,7 @@ void IsMethodValid(std::string method)
     std::set<std::string> allmethods;
     allmethods.insert("GET");
     allmethods.insert("DELETE");
-    allmethods.insert("POSTE");
+    allmethods.insert("POST");
     if (!allmethods.count(method)) send_405(); 
 }
 
@@ -86,47 +86,7 @@ void Client::upload()
 
 
 
-void    Client::serve()
-{
-    std::cout << "***********phase " << phase << std::endl;
-    if (this->phase == 0)
-    {
-        std::cout << "***********PARSING************" << std::endl;
-        parse();
-        if (this->phase == 1)
-        {
-            std::pair<std::string, Location*> loc = server.getMatchedLocation(URI);
-            this->location = loc.second;
-            this->resource = location->getRoot() + URI;
-        
-            std::cout << "************************************" << std::endl;
-            std::cout << "uri -> " << URI << std::endl;
-            std::cout << "matchedLocation -> (" << loc.first << ")" << std::endl;
-            std::cout << "resource -> " << resource << std::endl;
-            std::cout << "method -> " << methodType << std::endl;
 
-            std::map<std::string, std::string>::iterator	it_ = headerFields.begin();
-            for (; it_ != headerFields.end(); ++it_)
-                std::cout << it_->first << " : " << it_->second << std::endl;
-            std::cout << "************************************" << std::endl;
-
-        
-            std::cout << std::endl;
-
-        }
-    }
-    if (this->phase == 1)
-    {
-        char buff[] =   "HTTP/1.1 200 OK\r\n"
-                        "Server: Allah Y7ssen L3wan\r\n"
-                        "Content-Length: 13\r\n"
-                        "Content-Type: text/plain\r\n\r\n"
-                        "HELLO WORLD!\n";
-        this->response = std::string(buff, sizeof(buff));
-
-        this->phase = -1;
-    }
-}
 
 void Client::parse()
 {
@@ -145,7 +105,46 @@ void Client::parse()
         if (str == "")
         {
 
-            this->phase = 1;
+
+
+
+
+            std::pair<std::string, Location*> loc = server.getMatchedLocation(URI);
+            this->location = loc.second;
+            this->resource = location->getRoot() + URI;
+        
+            std::cout << "************************************" << std::endl;
+            std::cout << "uri -> " << URI << std::endl;
+            std::cout << "matchedLocation -> (" << loc.first << ")" << std::endl;
+            std::cout << "resource -> " << resource << std::endl;
+            std::cout << "method -> " << methodType << std::endl;
+
+            std::map<std::string, std::string>::iterator	it_ = headerFields.begin();
+            for (; it_ != headerFields.end(); ++it_)
+                std::cout << it_->first << " : " << it_->second << std::endl;
+            std::cout << "************************************" << std::endl;
+            std::cout << buffer << std::endl;
+
+
+            std::cout << std::endl;
+
+                char buff[] =   "HTTP/1.1 200 OK\r\n"
+                                "Server: Allah Y7ssen L3wan\r\n"
+                                "Content-Length: 13\r\n"
+                                "Content-Type: text/plain\r\n\r\n"
+                                "HELLO WORLD!\n";
+                this->response = std::string(buff, sizeof(buff));
+
+                this->phase = -1;
+
+
+
+
+
+
+
+
+
             return ;
         }
         if (this->methodType == "") 

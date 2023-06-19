@@ -41,12 +41,13 @@ class Client
         std::string                         ipAddress;
         Location                            *location;
         time_t                              lastActivity;
+        void                                (Client::*serve)( void );
     
 
     public:
 
         Client(int clSocket, Server &server, const std::string &ipAddress) : 
-                    clSocket(clSocket), phase(0), server(server), bytesUploaded(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)) {}
+                    clSocket(clSocket), phase(0), server(server), bytesUploaded(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)), serve(&Client::parse) {}
 
         Client  &operator= (const Client &cl)
         {
@@ -62,6 +63,7 @@ class Client
             location = cl.location;
             ipAddress = cl.ipAddress;
             lastActivity = time(NULL);
+            serve = cl.serve;
         
             return *this;
         }
@@ -72,8 +74,6 @@ class Client
         }
 
         ~Client() {};
-
-        void                serve();
         void                parse();
         void                upload();
         void                PostHandler();

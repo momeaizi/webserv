@@ -50,40 +50,43 @@ void    ContextManager::ioMultiplexer()
 		std::cout << "size -> " << clients.size() << std::endl;
 		for (std::list<Client>::iterator it = clients.begin(); it != clients.end();)
 		{
-			if (FD_ISSET(it->getClSocket(), &reads))
+			Client	&client = *it;
+
+			if (FD_ISSET(client.getClSocket(), &reads))
 			{
 				std::cout << "FD_ISSET read" <<std::endl;
 
-				bytes = recv(it->clSocket, buffer, 1024, 0);
+				bytes = recv(client.clSocket, buffer, 1024, 0);
 				std::cout << "after recv -> " << bytes << std::endl;
 				if (bytes <= 0)
 				{
-					it->drop(readMaster, writeMaster);
+					client.drop(readMaster, writeMaster);
 					clients.erase(it++);
 					continue ;
 				}
 
-				it->buffer += std::string(buffer, bytes);
-				it->serve();
+				client.buffer += std::string(buffer, bytes);
 			}
+
+			(client.*client.serve)();
 	
-			if (FD_ISSET(it->getClSocket(), &writes))
+			if (FD_ISSET(client.getClSocket(), &writes))
 			{
 				std::cout << "FD_ISSET write" <<std::endl;
-				if (it->response.length())
-					if (send(it->getClSocket(), it->response.data(), it->response.length(), 0) < 0)
+				if (client.response.length())
+					if (send(client.getClSocket(), client.response.data(), client.response.length(), 0) < 0)
 						perror("Send -> ");
-				it->response.clear();
+				client.response.clear();
 				
 			}
 
-			if (it->getPhase() == -1 || time(NULL) - it->lastActivity > TIMEOUT)
+			if (client.getPhase() == -1 || time(NULL) - client.lastActivity > TIMEOUT)
 			{
-				if (it->headerFields["connection"] == "Keep-Alive")
-					it->clear();
+				if (client.headerFields["connection"] == "Keep-Alive")
+					client.clear();
 				else
 				{
-					it->drop(readMaster, writeMaster);
+					client.drop(readMaster, writeMaster);
 					clients.erase(it++);
 					continue ;
 				}
