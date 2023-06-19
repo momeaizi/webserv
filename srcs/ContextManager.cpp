@@ -46,54 +46,47 @@ void    ContextManager::ioMultiplexer()
 				std::cout << "socket : " << clients.back().getClSocket() << std::endl;
 			}
 		}
+
 		std::cout << "size -> " << clients.size() << std::endl;
 		for (std::list<Client>::iterator it = clients.begin(); it != clients.end();)
 		{
 			if (FD_ISSET(it->getClSocket(), &reads))
 			{
-				std::cout << "FD_ISSET" <<std::endl;
+				std::cout << "FD_ISSET read" <<std::endl;
 
 				bytes = recv(it->clSocket, buffer, 1024, 0);
 				std::cout << "after recv -> " << bytes << std::endl;
 				if (bytes <= 0)
 				{
-					close(it->clSocket);
-				    FD_CLR(it->clSocket, &readMaster);
-					// it->drop();
+					it->drop(readMaster, writeMaster);
 					clients.erase(it++);
 					continue ;
 				}
 
 				it->buffer += std::string(buffer, bytes);
-				std::cout << it->buffer << std::endl;
-
-				if (it->getPhase() == 1)
-				{
-					std::cout << "phase = 1" <<std::endl;
-					it->parse();
-				}
-				if (it->getPhase() == 0)
-				{
-					std::cout << "phase = 0" <<std::endl;
-					std::cout << "************************************" << std::endl;
-					std::cout << "uri -> " << it->URI << std::endl;
-					std::cout << "method -> " << it->methodType << std::endl;
-					std::map<std::string, std::string>::iterator	it_ = it->headerFields.begin();
-					for (; it_ != it->headerFields.end(); ++it_)
-						std::cout << it_->first << " : " << it_->second << std::endl;
-					std::cout << "************************************" << std::endl;
-					std::cout << std::endl;
-					char buff[] =   "HTTP/1.1 200 OK\r\n"
-									"Server: Allah Y7ssen L3wan\r\n"
-									"Content-Length: 12\r\n"
-									"Content-Type: text/plain\r\n\r\n"
-									"HELLO WORLD!";
-					if (send(it->getClSocket(), buff, sizeof(buff), 0) < 0)
+				it->serve();
+			}
+	
+			if (FD_ISSET(it->getClSocket(), &writes))
+			{
+				std::cout << "FD_ISSET write" <<std::endl;
+				if (it->response.length())
+					if (send(it->getClSocket(), it->response.data(), it->response.length(), 0) < 0)
 						perror("Send -> ");
+				it->response.clear();
+				
+			}
+
+			if (it->getPhase() == -1 || time(NULL) - it->lastActivity > TIMEOUT)
+			{
+				if (it->headerFields["connection"] == "Keep-Alive")
+					it->clear();
+				else
+				{
+					it->drop(readMaster, writeMaster);
+					clients.erase(it++);
+					continue ;
 				}
-
-
-
 			}
 			++it;
 		}

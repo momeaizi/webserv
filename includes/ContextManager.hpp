@@ -12,6 +12,8 @@
 #include "ConfigParser.hpp"
 #include "string.hpp"
 
+#define TIMEOUT 60
+
 extern fd_set  readMaster;
 extern fd_set  writeMaster;
 

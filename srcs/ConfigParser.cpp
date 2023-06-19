@@ -70,7 +70,7 @@ void	ConfigParser::addServer()
 
 int	 ConfigParser::parseServer()
 {
-	if (trimString(buff) == "server")
+	if (trimString(buff) == "server" && buff[0] == 's')
 	{
 
 		addServer();

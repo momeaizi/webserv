@@ -18,6 +18,16 @@ bool containsOnlyDigits(const std::string& str)
     return true;
 }
 
+std::string to_lower(const std::string &str)
+{
+    std::string lower_str(str);
+
+    for (size_t i = 0; i < str.length(); ++i)
+        lower_str[i] = std::tolower(str[i]);
+
+    return lower_str;
+}
+
 std::string trim(const std::string& str, const std::string t)
 {
     size_t first = str.find_first_not_of(t);

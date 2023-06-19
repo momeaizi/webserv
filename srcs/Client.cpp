@@ -93,7 +93,7 @@ std::string  Client::initializeupload()
 {
     std::string FileName;
 
-    time_t now = time(0);
+    time_t now = time(NULL);
     tm *gmtm = gmtime(&now);
     FileName = std::to_string(gmtm->tm_mday) + ":";
     FileName += std::to_string(gmtm->tm_mon + 1) + ":";
@@ -133,6 +133,51 @@ void Client::upload()
     uploadFile.close();
 }
 
+
+
+
+void    Client::serve()
+{
+    std::cout << "***********phase " << phase << std::endl;
+    if (this->phase == 0)
+    {
+        std::cout << "***********PARSING************" << std::endl;
+        parse();
+        if (this->phase == 1)
+        {
+            std::pair<std::string, Location*> loc = server.getMatchedLocation(URI);
+            this->location = loc.second;
+            this->resource = location->getRoot() + URI;
+        
+            std::cout << "************************************" << std::endl;
+            std::cout << "uri -> " << URI << std::endl;
+            std::cout << "matchedLocation -> (" << loc.first << ")" << std::endl;
+            std::cout << "resource -> " << resource << std::endl;
+            std::cout << "method -> " << methodType << std::endl;
+
+            std::map<std::string, std::string>::iterator	it_ = headerFields.begin();
+            for (; it_ != headerFields.end(); ++it_)
+                std::cout << it_->first << " : " << it_->second << std::endl;
+            std::cout << "************************************" << std::endl;
+
+        
+            std::cout << std::endl;
+
+        }
+    }
+    if (this->phase == 1)
+    {
+        char buff[] =   "HTTP/1.1 200 OK\r\n"
+                        "Server: Allah Y7ssen L3wan\r\n"
+                        "Content-Length: 13\r\n"
+                        "Content-Type: text/plain\r\n\r\n"
+                        "HELLO WORLD!\n";
+        this->response = std::string(buff, sizeof(buff));
+
+        this->phase = -1;
+    }
+}
+
 void Client::parse()
 {
     std::list<std::string>              lines;
@@ -145,14 +190,12 @@ void Client::parse()
 
     for (it = lines.begin(); it != lines.end(); it++)
     {
-        std::cout << "lines.size()" << lines.size() << " lines[0] : " << *it;
         std::string &str = *it;
 
         if (str == "")
         {
-            std::cout << "parse is finished" << std::endl;
-            this->phase = 0; // request is finished
-            std::cout << "phase is changed -> " << this->phase << std::endl;
+
+            this->phase = 1;
             return ;
         }
         if (this->methodType == "") 
@@ -178,9 +221,9 @@ void Client::parse()
         }
         else
         {
-            int index = str.find(":");
-            int len   = str.length();
-            std::string   name = str.substr(0, index);
+            int             index = str.find(":");
+            int             len   = str.length();
+            std::string     name  = to_lower(str.substr(0, index));
 
             if (this->headerFields.count(name) and index == -1)
                 return ;// send_400();
@@ -195,8 +238,21 @@ void Client::PostHandler()
 {
     if (location->getUpload() != "")
     {
+<<<<<<< HEAD
         send_error(201);
         upload();
+=======
+        char    res[] = "HTTP/1.1 200 OK\r\n"
+                        "Content-Type: text/plain\r\n"
+                        "Content-Length: 27\r\n\r\n"
+                        "The request was successful.\r\n";
+
+        response = std::string(res, sizeof(res));
+
+        // send_201();
+        phase = 2;
+        return ;
+>>>>>>> 3b03b122bd2f54fa78a2cda6fd3aa2967c438c3c
     }
     else if (!ft::isPathExists(resource))
         send_error(404);
@@ -250,12 +306,20 @@ void    Client::DeleteHandler()
         remove(resource.data());
         send_error(204);
     }
+<<<<<<< HEAD
     else if (deleteDir(resource.data()))
         send_error(204);
     else if (access(resource.data(), W_OK))
         send_error(500);
     else 
         send_error(403);
+=======
+    if (deleteDir(resource.data()))
+        send_204();
+    else if (access(resource.data(), W_OK))
+        send_500();
+    send_403();
+>>>>>>> 3b03b122bd2f54fa78a2cda6fd3aa2967c438c3c
 }
 
 void    Client::GetHandler()
@@ -287,15 +351,37 @@ void    Client::GetHandler()
         }
         resource = filePath;
     }
+<<<<<<< HEAD
     if (!location->locationHasCgi())
         send_error(200);
     else runCGI();
+=======
+    if (location->locationHasCgi())
+        runCGI();
+    else
+        send_200();
+>>>>>>> 3b03b122bd2f54fa78a2cda6fd3aa2967c438c3c
 }
 
-void    Client::drop()
+void    Client::drop(fd_set &readMaster, fd_set &writeMaster)
 {
-    // close(clSocket);
-    // FD_CLR(clSocket, &readmaster);
+    close(clSocket);
+    FD_CLR(clSocket, &readMaster);
+    FD_CLR(clSocket, &writeMaster);
+}
+
+
+void    Client::clear()
+{
+    phase = 0;
+    bytesUploaded = 0;
+    uploadFile.close();
+    uploadFile.clear();
+    methodType.clear();
+    URI.clear();
+    resource.clear();
+    headerFields.clear();
+    location = NULL;
 }
 
 
