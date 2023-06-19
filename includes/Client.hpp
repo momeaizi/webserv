@@ -8,14 +8,15 @@
 # include <unistd.h>
 # include <fstream>
 # include <list>
+# include <fcntl.h>
 # include <dirent.h>
+# include <sstream>
 # include <cstdio>
 # include <string>
 # include <iostream>
 # include <ctime>
 
 # define MAX 2043
-
 
 
 std::string     trimString(const std::string &str);
@@ -29,6 +30,7 @@ class Client
         int                                 clSocket;
         int                                 phase;
         int                                 fd;
+        int                                 Rfd;
         Server                              &server;
         size_t                              bytesUploaded;
         std::ofstream                       uploadFile;
@@ -37,6 +39,7 @@ class Client
         std::string                         buffer;
         std::string                         resource;
         std::map<std::string, std::string>  headerFields;
+        std::string                         response;
         std::string                         ipAddress;
         Location                            *location;
     
@@ -44,7 +47,7 @@ class Client
     public:
 
         Client(int clSocket, Server &server, const std::string &ipAddress) : 
-                    clSocket(clSocket), phase(1), server(server), bytesUploaded(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL) {}
+                    clSocket(clSocket), phase(1), Rfd(-1), server(server), bytesUploaded(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL) {}
 
         Client  &operator= (const Client &cl)
         {
@@ -73,11 +76,13 @@ class Client
 
         void                parse();
         void                upload();
+        void                GetFromFile();
         void                PostHandler();
         void                DeleteHandler();
         void                GetHandler();
         std::string         initializeupload();
         void                drop();
+        void                send_error(int error_status);
 
 
         /*                              setters                                         */

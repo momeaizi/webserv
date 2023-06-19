@@ -1,24 +1,55 @@
-#include "../includes/Client.hpp"
-
+# include "../includes/Client.hpp"
 # include <dirent.h>
 # include <cstdio>
 
 
-void IsUriValid(std::string str)
+std::map<int, std::string>  errorMes;
+
+void    InitErrorMessage()
+{
+    errorMes[100] = "Continue";
+    errorMes[101] = "Switching Protocols";
+    errorMes[200] = "OK";
+    errorMes[201] = "Created";
+    errorMes[204] = "No Content";
+    errorMes[301] = "Moved Permanently";
+    errorMes[400] = "Bad Request";
+    errorMes[401] = "Unauthorized";
+    errorMes[403] = "Forbidden";
+    errorMes[404] = "Not Found";
+    errorMes[405] = "Method Not Allowed";
+    errorMes[409] = "Conflict";
+    errorMes[413] = "Request Entity Too Large";
+    errorMes[414] = "Request_URI Too Long";
+    errorMes[500] = "Internal Server Error";
+    errorMes[501] = "Not Implemented";
+    errorMes[505] = "HTTP Version Not Supported";
+}
+
+void Client::send_error(int error_status)
+{
+    response = "HTTP/1.1 " + std::to_string(error_status);
+    response += errorMes[error_status];
+}
+
+int IsUriValid(std::string str)
 {
     const std::string allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~!$&'()*+,;=:@/?#[]";
     for(size_t i = 0; i < str.size(); i++)
         if (allowed.find(str[i]) ==std::string::npos)
-            send_400(); 
+            return 0;
+    return 1; 
 }
 
-void IsMethodValid(std::string method)
+int IsMethodValid(std::string method)
 {
     std::set<std::string> allmethods;
     allmethods.insert("GET");
     allmethods.insert("DELETE");
     allmethods.insert("POSTE");
-    if (!allmethods.count(method)) send_405(); 
+    if (!allmethods.count(method))
+        return 0;
+    return 1; 
 }
 
 bool hasSlash(std::string resource)
@@ -37,6 +68,25 @@ bool hasIndex(std::string index)
 void runCGI()
 {
 
+}
+
+
+void Client::GetFromFile()
+{
+    char    buff[2000];
+    if (Rfd == -1)
+        Rfd = open(resource.data(), O_RDONLY);
+    int  len = read(Rfd, buff, 2000);
+    std::stringstream stream;
+    stream << std::hex << len;
+    this->response += stream.str();
+    this->response += std::string(buff);
+    if (len < 2000)
+    {
+        this->response += "0";
+        phase = -1;
+        close(Rfd);
+    }
 }
 
 std::string  Client::initializeupload()
@@ -108,17 +158,23 @@ void Client::parse()
         if (this->methodType == "") 
         {
             this->methodType = tok(str, " ");
-            IsMethodValid(methodType);
+            if (!IsMethodValid(methodType)) send_error(405);
             first = str.find_first_not_of(' ');
             str = str.substr(first);
             URI = tok(str, " ");
             if (URI.size() > MAX)
-                send_414(); // 
-            IsUriValid(URI);
+            {
+                send_error(414); // 
+                return ;
+            }
+            if (!IsUriValid(URI)) send_error(400);
             first = str.find_first_not_of(' ');
             str = str.substr(first);
             if (tok(str, "\r\n") != "HTTP/1.1")
-                send_505();
+            {
+                send_error(505);
+                return ;
+            }
         }
         else
         {
@@ -139,27 +195,34 @@ void Client::PostHandler()
 {
     if (location->getUpload() != "")
     {
+        send_error(201);
         upload();
-        send_201();
     }
-    if (!ft::isPathExists(resource))
-        send_404();
+    else if (!ft::isPathExists(resource))
+        send_error(404);
     if (ft::isDirectory(resource)) // create func
     {
         if (!hasSlash(resource))
-            send_301();
+        {
+            send_error(301);
+            return ;
+        }
         std::string filePath = resource;
         if (hasIndex(location->getIndex()))
             filePath += location->getIndex();
         else
             filePath += "index.html";
         if (!ft::isFile(filePath))
-            send_403();
+        {
+            send_error(403);
+            return ;
+        }
         resource = filePath;
     }
     if (!location->locationHasCgi())
-        send_403();
-    runCGI();
+        send_error(403);
+    else
+        runCGI();
 }
 
 int deleteDir(const char* path)
@@ -185,22 +248,30 @@ void    Client::DeleteHandler()
     if (ft::isFile(resource))
     {
         remove(resource.data());
-        send_204();
+        send_error(204);
     }
-    if (deleteDir(resource.data()))
-        send_204();
-    if (access(resource.data(), W_OK))
-        send_500();
-    send_403();
+    else if (deleteDir(resource.data()))
+        send_error(204);
+    else if (access(resource.data(), W_OK))
+        send_error(500);
+    else 
+        send_error(403);
 }
 
 void    Client::GetHandler()
 {
-    if (getResource() == "") send_404();
+    if (this->buffer == "")
+    {
+        send_error(404);
+        return ;
+    }
     if (ft::isDirectory(resource))
     {
         if (!hasSlash(resource))
-            send_301();
+        {
+            send_error(301);
+            return ;
+        }
         std::string filePath = resource;
         if(hasIndex(location->getIndex()))
                 filePath += location->getIndex();
@@ -209,14 +280,16 @@ void    Client::GetHandler()
         if (!ft::isFile(filePath))
         {
             if (location->getAutoindex())
-                send_200();
-            send_403();
+                send_error(200);
+            else
+                send_error(403);
+            return ;
         }
         resource = filePath;
     }
     if (!location->locationHasCgi())
-        send_200();
-    runCGI();
+        send_error(200);
+    else runCGI();
 }
 
 void    Client::drop()
