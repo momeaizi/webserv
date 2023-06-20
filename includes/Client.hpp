@@ -23,7 +23,9 @@
 
 
 std::string     trimString(const std::string &str);
-int deleteDir(const char* path);
+int             deleteDir(const char* path);
+void            InitstatusCodesage();
+void            mimeTypesInitializer();
 
 class Server;
 
@@ -87,7 +89,7 @@ class Client
         std::string         initializeupload();
         void                drop(fd_set &readMaster, fd_set &writeMaster);
         void                clear();
-        void                send_error(int error_status);
+        void                setHeader(int error_status);
 
 
         /*                              setters                                         */

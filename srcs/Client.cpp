@@ -183,15 +183,51 @@ void    mimeTypesInitializer()
     mimeTypes["application/vnd.openxmlformats-officedocument.presentationml.presentation"]       =   ".pptx";
 }
 
-void Client::send_error(int error_status)
+long GetFileSize(const char* filename)
 {
-    response = "HTTP/1.1 " + std::to_string(error_status);
-    response += statusCode[error_status];
+    FILE* file = fopen(filename, "rb"); // Open the file in binary mode
+
+    if (file != NULL)
+    {
+        fseek(file, 0, SEEK_END); // Seek to the end of the file
+        long size = ftell(file);  // Get the current position, which is the size of the file
+        fclose(file);             // Close the file
+        return size;
+    }
+
+    return -1; // Return -1 to indicate an error occurred
+}
+
+
+void Client::setHeader(int error_status)
+{
+    response = "HTTP/1.1 " + std::to_string(error_status) + " " + statusCode[error_status] + "\r\n";
+
     // if (error_status >= 300)
     // {
     //     resource = path/error_status.html;
     // }
-   //loop for headerFields
+
+    if (resource.length())
+    {
+        size_t  found = resource.find_last_of('.');
+        if (found != std::string::npos)
+            response += "Content-Type: " + mimeTypes[resource.substr(found, resource.length())] + "\r\n";
+        else
+            response += "Content-Type: text/plain\r\n";
+
+
+        long    fileSize = GetFileSize(resource.data());
+        std::cout << "************* " << fileSize << std::endl;
+        std::cout << "************* " << resource << std::endl;
+        if (fileSize < 2048)
+            response += "Content-Length: " + std::to_string(fileSize) + "\r\n";
+        else
+            response += "Transfer-Encoding: chunked\r\n";
+        
+
+
+    }
 
 
 }
@@ -205,13 +241,9 @@ int IsUriValid(std::string str)
     return 1; 
 }
 
-int IsMethodValid(std::string method)
+int IsMethodValid(const std::string &method, const std::set<std::string> &allowedMethods)
 {
-    std::set<std::string> allmethods;
-    allmethods.insert("GET");
-    allmethods.insert("DELETE");
-    allmethods.insert("POSTE");
-    if (!allmethods.count(method))
+    if (!allowedMethods.count(method))
         return 0;
     return 1; 
 }
@@ -325,34 +357,15 @@ void Client::parse()
         {
 
 
-
-            std::pair<std::string, Location*> loc = server.getMatchedLocation(URI);
-            this->location = loc.second;
-            this->resource = location->getRoot() + URI;
-        
-            std::cout << "************************************" << std::endl;
-            std::cout << "uri -> " << URI << std::endl;
-            std::cout << "matchedLocation -> (" << loc.first << ")" << std::endl;
-            std::cout << "resource -> " << resource << std::endl;
-            std::cout << "method -> " << methodType << std::endl;
-
-            std::map<std::string, std::string>::iterator	it_ = headerFields.begin();
-            for (; it_ != headerFields.end(); ++it_)
-                std::cout << it_->first << " : " << it_->second << std::endl;
-            std::cout << "************************************" << std::endl;
-            std::cout << buffer << std::endl;
+            if (methodType == "GET")
+                serve = &Client::GetHandler;
+            else if (methodType == "POST")
+                serve = &Client::PostHandler;
+            else
+                serve = &Client::DeleteHandler;
 
 
-            std::cout << std::endl;
-
-                char buff[] =   "HTTP/1.1 200 OK\r\n"
-                                "Server: Allah Y7ssen L3wan\r\n"
-                                "Content-Length: 13\r\n"
-                                "Content-Type: text/plain\r\n\r\n"
-                                "HELLO WORLD!\n";
-                this->response = std::string(buff, sizeof(buff));
-
-                this->phase = -1;
+            // this->phase = -1;
 
 
 
@@ -364,24 +377,46 @@ void Client::parse()
 
             return ;
         }
+
+        
         if (this->methodType == "") 
         {
             this->methodType = tok(str, " ");
-            if (!IsMethodValid(methodType)) send_error(405);
             first = str.find_first_not_of(' ');
             str = str.substr(first);
             URI = tok(str, " ");
-            if (URI.size() > MAX)
+
+            std::pair<std::string, Location*> loc = server.getMatchedLocation(URI);
+            this->location = loc.second;
+            if (!location)
             {
-                send_error(414); // 
+                setHeader(404);
                 return ;
             }
-            if (!IsUriValid(URI)) send_error(400);
+            
+            if (!IsMethodValid(methodType, location->getAllowedMethods()))
+            {
+                setHeader(405);
+                return ;
+            }
+
+            if (URI.length() > MAX)
+            {
+                setHeader(414); // 
+                return ;
+            }
+            if (!IsUriValid(URI))
+            {
+                setHeader(400);
+                return ;
+            }
+
+            this->resource = location->getRoot() + URI;
             first = str.find_first_not_of(' ');
             str = str.substr(first);
             if (tok(str, "\r\n") != "HTTP/1.1")
             {
-                send_error(505);
+                setHeader(505);
                 return ;
             }
         }
@@ -403,16 +438,16 @@ void Client::PostHandler()
 {
     if (location->getUpload() != "")
     {
-        send_error(201);
+        setHeader(201);
         upload();
     }
     else if (!ft::isPathExists(resource))
-        send_error(404);
+        setHeader(404);
     if (ft::isDirectory(resource)) // create func
     {
         if (!hasSlash(resource))
         {
-            send_error(301);
+            setHeader(301);
             return ;
         }
         std::string filePath = resource;
@@ -422,13 +457,13 @@ void Client::PostHandler()
             filePath += "index.html";
         if (!ft::isFile(filePath))
         {
-            send_error(403);
+            setHeader(403);
             return ;
         }
         resource = filePath;
     }
     if (!location->locationHasCgi())
-        send_error(403);
+        setHeader(403);
     else
         runCGI();
 }
@@ -456,14 +491,14 @@ void    Client::DeleteHandler()
     if (ft::isFile(resource))
     {
         remove(resource.data());
-        send_error(204);
+        setHeader(204);
     }
     else if (deleteDir(resource.data()))
-        send_error(204);
+        setHeader(204);
     else if (access(resource.data(), W_OK))
-        send_error(500);
+        setHeader(500);
     else 
-        send_error(403);
+        setHeader(403);
 }
 
 void    Client::GetHandler()
@@ -471,7 +506,7 @@ void    Client::GetHandler()
     if (this->buffer == "")
     {
         // resource = 400.html;
-        send_error(404);
+        setHeader(404);
         return ;
     }
     if (ft::isDirectory(resource))
@@ -479,7 +514,7 @@ void    Client::GetHandler()
         if (!hasSlash(resource))
         {
             // resource = 301.html;
-            send_error(301);
+            setHeader(301);
             return ;
         }
         std::string filePath = resource;
@@ -497,7 +532,7 @@ void    Client::GetHandler()
                 send_error(200);
             }
             else
-                send_error(403);
+                setHeader(403);
             return ;
         }
         resource = filePath;
@@ -505,7 +540,7 @@ void    Client::GetHandler()
     if (!location->locationHasCgi())
     {
         //getfrom file
-        send_error(200);
+        setHeader(200);
     }
     else runCGI();
 }
