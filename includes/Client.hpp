@@ -4,6 +4,7 @@
 # include "string.hpp"
 # include "errors.hpp"
 # include "filesCont.hpp"
+# include "autoindex.hpp"
 # include "Server.hpp"
 # include <sys/socket.h>
 # include <unistd.h>

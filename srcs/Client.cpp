@@ -271,7 +271,6 @@ std::string  Client::initializeupload()
     FileName += std::to_string(gmtm->tm_hour + 5) + ":";
     FileName += std::to_string(gmtm->tm_min + 30) + ":";
     FileName += std::to_string(gmtm->tm_sec);
-    // this->uploadFile.open(FileName);
     return FileName;
 }
 
@@ -394,7 +393,6 @@ void Client::parse()
 
             if (this->headerFields.count(name) and index == -1)
                 return ;// send_400();
-
             std::string   val = str.substr(index + 1, len);
             headerFields [name] = trimString(val);
         }
@@ -493,9 +491,9 @@ void    Client::GetHandler()
         {
             if (location->getAutoindex())
             {
-                //add string auto index
-
-                // resource = autoindex+random.html
+                std::string name = resource + initializeupload() +"autoindex.html";
+                StringOfCurrentContent(resource, name);
+                resource = name;
                 send_error(200);
             }
             else

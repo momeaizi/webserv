@@ -1,5 +1,4 @@
-# include "../includes/Client.hpp"
-# include "../includes/filesCont.hpp"
+# include "../includes/autoindex.hpp"
 # include <sys/stat.h>
 
 std::string strTime(std::string filepath)
@@ -34,7 +33,7 @@ std::vector<std::string>  ListOfCurrentContent(std::string path)
     return currentContent;
 }
 
-std::string StringOfCurrentContent(std::string path)
+void StringOfCurrentContent(const std::string &path, const std::string &filename)
 {
     std::string response = "<!DOCTYPE html><html><body><h1>Index of " + path + "/</h1> <hr><ul>";
     std::vector<std::string> currentContent = ListOfCurrentContent(path);
@@ -48,12 +47,7 @@ std::string StringOfCurrentContent(std::string path)
         response += "</a> <l/i>\n";// + currentContent[i][1] + " \n";// + currentContent[i][2] + " \n";
     }
     response += "</ul><hr> </body>";
-    return response;
-}
-
-
-int main()
-{
-    std::ofstream file("index.html");
-    file << StringOfCurrentContent("/Users/mskerba/Desktop");
+    std::ofstream HTMLFILE(filename);
+    HTMLFILE << response;
+    HTMLFILE.close();
 }
