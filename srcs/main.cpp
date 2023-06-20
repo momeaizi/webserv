@@ -84,7 +84,8 @@ int main()
 {
     // testParsing();
 
-
+    InitstatusCodesage();
+    mimeTypesInitializer();
     try
     {
         ContextManager  http;
