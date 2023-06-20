@@ -11,8 +11,8 @@ bool ft::isDirectory(const std::string& path)
 
 bool ft::isPathExists(const std::string& path)
 {
-    struct stat buffer;
-    return (stat(path.data(), &buffer) == 0);
+    struct stat pathSt;
+    return (stat(path.data(), &pathSt) == 0);
 }
 
 bool ft::isFile(const std::string& path)

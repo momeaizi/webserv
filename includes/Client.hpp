@@ -20,6 +20,7 @@
 
 # define MAX 2048
 # define BUFFER_SIZE 2048
+# define ALLOWED_CHAR_IN_URI     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~!$&'()*+,;=:@/?#[]"
 
 
 std::string     trimString(const std::string &str);
@@ -98,6 +99,7 @@ class Client
         // void    setIpAddress();
 
         /*                              getters                                         */
+
         int                 getClSocket() {return clSocket; }
         int                 getPhase() {return phase; }
         const std::string   &getResource() {return resource; }

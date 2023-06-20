@@ -199,42 +199,41 @@ long GetFileSize(const char* filename)
 }
 
 
-void Client::setHeader(int error_status)
+void Client::setHeader(int statusCode)
 {
-    response = "HTTP/1.1 " + std::to_string(error_status) + " " + statusCode[error_status] + "\r\n";
+    response = "HTTP/1.1 " + std::to_string(statusCode) + " " + statusCode[statusCode] + "\r\n";
 
-    // if (error_status >= 300)
-    // {
-    //     resource = path/error_status.html;
-    // }
+    if (statusCode >= 300)
+    {
+        if (location->errorPages.count(statusCode))
+            resource = location->errorPages[statusCode];
+        else
+            resource = "../errorPages/" + statusCode + ".html";
+    }
 
     if (resource.length())
     {
-        size_t  found = resource.find_last_of('.');
+        long    fileSize = GetFileSize(resource.data());
+        size_t  found    = resource.find_last_of('.');
+
         if (found != std::string::npos)
-            response += "Content-Type: " + mimeTypes[resource.substr(found, resource.length())] + "\r\n";
+            std::string key = resource.substr(found, resource.length());
+
+        if (found != std::string::npos && mimeTypes.count(key))
+            response += "Content-Type: " + mimeTypes[key] + "\r\n";
         else
             response += "Content-Type: text/plain\r\n";
 
-
-        long    fileSize = GetFileSize(resource.data());
-        std::cout << "************* " << fileSize << std::endl;
-        std::cout << "************* " << resource << std::endl;
         if (fileSize < 2048)
             response += "Content-Length: " + std::to_string(fileSize) + "\r\n";
         else
             response += "Transfer-Encoding: chunked\r\n";
-        
-
-
     }
-
-
 }
 
 int IsUriValid(std::string str)
 {
-    const std::string allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~!$&'()*+,;=:@/?#[]";
+    const std::string allowed = ALLOWED_CHAR_IN_URI;
     for(size_t i = 0; i < str.size(); i++)
         if (allowed.find(str[i]) ==std::string::npos)
             return 0;
@@ -248,7 +247,7 @@ int IsMethodValid(const std::string &method, const std::set<std::string> &allowe
     return 1; 
 }
 
-bool hasSlash(std::string resource)
+bool hasSlash(const std::string &resource)
 {
     int index;
 
@@ -256,9 +255,9 @@ bool hasSlash(std::string resource)
     return (resource[index] == '/');
 }
 
-bool hasIndex(std::string index)
+bool hasIndex(const std::string &index)
 {
-    return (index == "");
+    return !index.empty();
 }
 
 void runCGI()
@@ -440,6 +439,7 @@ void Client::PostHandler()
     {
         setHeader(201);
         upload();
+        return ;
     }
     else if (!ft::isPathExists(resource))
         setHeader(404);
@@ -453,8 +453,6 @@ void Client::PostHandler()
         std::string filePath = resource;
         if (hasIndex(location->getIndex()))
             filePath += location->getIndex();
-        else
-            filePath += "index.html";
         if (!ft::isFile(filePath))
         {
             setHeader(403);
