@@ -272,14 +272,20 @@ void Client::GetFromFile()
     char    buff[BUFFER_SIZE];
     if (Rfd == -1)
         Rfd = open(resource.data(), O_RDONLY);
-    int  len = read(Rfd, buff, BUFFER_SIZE);
-    std::stringstream stream;
-    stream << std::hex << len;
-    this->response += stream.str();
+    struct stat st;
+    stat(resource.data(), &st);
+    int  len = read(Rfd, buff, 2048);
+    if (st.st_size > BUFFER_SIZE)
+    {
+        std::stringstream stream;
+        stream << std::hex << len;
+        this->response += stream.str();
+    }
     this->response += "\r\n"+std::string(buff);
     if (len < BUFFER_SIZE)
     {
-        this->response += "0";
+        if (st.st_size > BUFFER_SIZE)
+            this->response += "0";
         phase = -1;
         close(Rfd);
     }
