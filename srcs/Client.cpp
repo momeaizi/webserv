@@ -3,29 +3,29 @@
 # include <cstdio>
 
 
-std::map<int, std::string>          statusCode;
+std::map<int, std::string>          statusCodes;
 std::map<std::string, std::string>  mimeTypes;
 
 
 void    InitstatusCodesage()
 {
-    statusCode[100] = "Continue";
-    statusCode[101] = "Switching Protocols";
-    statusCode[200] = "OK";
-    statusCode[201] = "Created";
-    statusCode[204] = "No Content";
-    statusCode[301] = "Moved Permanently";
-    statusCode[400] = "Bad Request";
-    statusCode[401] = "Unauthorized";
-    statusCode[403] = "Forbidden";
-    statusCode[404] = "Not Found";
-    statusCode[405] = "Method Not Allowed";
-    statusCode[409] = "Conflict";
-    statusCode[413] = "Request Entity Too Large";
-    statusCode[414] = "Request_URI Too Long";
-    statusCode[500] = "Internal Server Error";
-    statusCode[501] = "Not Implemented";
-    statusCode[505] = "HTTP Version Not Supported";
+    statusCodes[100] = "Continue";
+    statusCodes[101] = "Switching Protocols";
+    statusCodes[200] = "OK";
+    statusCodes[201] = "Created";
+    statusCodes[204] = "No Content";
+    statusCodes[301] = "Moved Permanently";
+    statusCodes[400] = "Bad Request";
+    statusCodes[401] = "Unauthorized";
+    statusCodes[403] = "Forbidden";
+    statusCodes[404] = "Not Found";
+    statusCodes[405] = "Method Not Allowed";
+    statusCodes[409] = "Conflict";
+    statusCodes[413] = "Request Entity Too Large";
+    statusCodes[414] = "Request_URI Too Long";
+    statusCodes[500] = "Internal Server Error";
+    statusCodes[501] = "Not Implemented";
+    statusCodes[505] = "HTTP Version Not Supported";
 }
 
 void    mimeTypesInitializer()
@@ -201,14 +201,14 @@ long GetFileSize(const char* filename)
 
 void Client::setHeader(int statusCode)
 {
-    response = "HTTP/1.1 " + std::to_string(statusCode) + " " + statusCode[statusCode] + "\r\n";
+    response = "HTTP/1.1 " + std::to_string(statusCode) + " " + statusCodes[statusCode] + "\r\n";
 
     if (statusCode >= 300)
     {
-        if (location->errorPages.count(statusCode))
-            resource = location->errorPages[statusCode];
+        if (server.getErrorPages().count(statusCode))
+            resource = server.getErrorPages().at(statusCode);
         else
-            resource = "../errorPages/" + statusCode + ".html";
+            resource = "../errorPages/" + std::to_string(statusCode) + ".html";
     }
 
     if (resource.length())
@@ -527,7 +527,7 @@ void    Client::GetHandler()
                 std::string name = resource + initializeupload() +"autoindex.html";
                 StringOfCurrentContent(resource, name);
                 resource = name;
-                send_error(200);
+                setHeader(200);
             }
             else
                 setHeader(403);
