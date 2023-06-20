@@ -46,15 +46,10 @@ int IsMethodValid(std::string method)
     std::set<std::string> allmethods;
     allmethods.insert("GET");
     allmethods.insert("DELETE");
-<<<<<<< HEAD
-    allmethods.insert("POST");
-    if (!allmethods.count(method)) send_405(); 
-=======
     allmethods.insert("POSTE");
     if (!allmethods.count(method))
         return 0;
     return 1; 
->>>>>>> 3732587471ee4aad9f65655b0f29feb4f0cf967f
 }
 
 bool hasSlash(std::string resource)
@@ -162,8 +157,6 @@ void Client::parse()
 
 
 
-
-
             std::pair<std::string, Location*> loc = server.getMatchedLocation(URI);
             this->location = loc.second;
             this->resource = location->getRoot() + URI;
@@ -242,21 +235,8 @@ void Client::PostHandler()
 {
     if (location->getUpload() != "")
     {
-<<<<<<< HEAD
         send_error(201);
         upload();
-=======
-        char    res[] = "HTTP/1.1 200 OK\r\n"
-                        "Content-Type: text/plain\r\n"
-                        "Content-Length: 27\r\n\r\n"
-                        "The request was successful.\r\n";
-
-        response = std::string(res, sizeof(res));
-
-        // send_201();
-        phase = 2;
-        return ;
->>>>>>> 3b03b122bd2f54fa78a2cda6fd3aa2967c438c3c
     }
     else if (!ft::isPathExists(resource))
         send_error(404);
@@ -310,20 +290,12 @@ void    Client::DeleteHandler()
         remove(resource.data());
         send_error(204);
     }
-<<<<<<< HEAD
     else if (deleteDir(resource.data()))
         send_error(204);
     else if (access(resource.data(), W_OK))
         send_error(500);
     else 
         send_error(403);
-=======
-    if (deleteDir(resource.data()))
-        send_204();
-    else if (access(resource.data(), W_OK))
-        send_500();
-    send_403();
->>>>>>> 3b03b122bd2f54fa78a2cda6fd3aa2967c438c3c
 }
 
 void    Client::GetHandler()
@@ -355,16 +327,9 @@ void    Client::GetHandler()
         }
         resource = filePath;
     }
-<<<<<<< HEAD
     if (!location->locationHasCgi())
         send_error(200);
     else runCGI();
-=======
-    if (location->locationHasCgi())
-        runCGI();
-    else
-        send_200();
->>>>>>> 3b03b122bd2f54fa78a2cda6fd3aa2967c438c3c
 }
 
 void    Client::drop(fd_set &readMaster, fd_set &writeMaster)

@@ -41,7 +41,6 @@ class Client
         std::string                         response;
         std::string                         resource;
         std::map<std::string, std::string>  headerFields;
-        std::string                         response;
         std::string                         ipAddress;
         Location                            *location;
         time_t                              lastActivity;
@@ -51,11 +50,7 @@ class Client
     public:
 
         Client(int clSocket, Server &server, const std::string &ipAddress) : 
-<<<<<<< HEAD
-                    clSocket(clSocket), phase(0), server(server), bytesUploaded(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)), serve(&Client::parse) {}
-=======
-                    clSocket(clSocket), phase(1), Rfd(-1), server(server), bytesUploaded(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL) {}
->>>>>>> 3732587471ee4aad9f65655b0f29feb4f0cf967f
+                    clSocket(clSocket), phase(1), Rfd(-1), server(server), bytesUploaded(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)), serve(&Client::parse) {}
 
         Client  &operator= (const Client &cl)
         {
@@ -89,7 +84,8 @@ class Client
         void                DeleteHandler();
         void                GetHandler();
         std::string         initializeupload();
-        void                drop();
+        void                drop(fd_set &readMaster, fd_set &writeMaster);
+        void                clear();
         void                send_error(int error_status);
 
 
