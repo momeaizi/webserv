@@ -17,7 +17,8 @@
 # include <iostream>
 # include <ctime>
 
-# define MAX 2043
+# define MAX 2048
+# define BUFFER_SIZE 2048
 
 
 std::string     trimString(const std::string &str);
@@ -30,7 +31,6 @@ class Client
     public:
         int                                 clSocket;
         int                                 phase;
-        int                                 fd;
         int                                 Rfd;
         Server                              &server;
         size_t                              bytesUploaded;
@@ -56,7 +56,7 @@ class Client
         {
             clSocket = cl.clSocket;
             phase = cl.phase;
-            fd = cl.fd;
+            Rfd = cl.Rfd;
             bytesUploaded = cl.bytesUploaded;
             methodType = cl.methodType;
             URI = cl.URI;

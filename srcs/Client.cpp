@@ -3,33 +3,197 @@
 # include <cstdio>
 
 
-std::map<int, std::string>  errorMes;
+std::map<int, std::string>          statusCode;
+std::map<std::string, std::string>  mimeTypes;
 
-void    InitErrorMessage()
+
+void    InitstatusCodesage()
 {
-    errorMes[100] = "Continue";
-    errorMes[101] = "Switching Protocols";
-    errorMes[200] = "OK";
-    errorMes[201] = "Created";
-    errorMes[204] = "No Content";
-    errorMes[301] = "Moved Permanently";
-    errorMes[400] = "Bad Request";
-    errorMes[401] = "Unauthorized";
-    errorMes[403] = "Forbidden";
-    errorMes[404] = "Not Found";
-    errorMes[405] = "Method Not Allowed";
-    errorMes[409] = "Conflict";
-    errorMes[413] = "Request Entity Too Large";
-    errorMes[414] = "Request_URI Too Long";
-    errorMes[500] = "Internal Server Error";
-    errorMes[501] = "Not Implemented";
-    errorMes[505] = "HTTP Version Not Supported";
+    statusCode[100] = "Continue";
+    statusCode[101] = "Switching Protocols";
+    statusCode[200] = "OK";
+    statusCode[201] = "Created";
+    statusCode[204] = "No Content";
+    statusCode[301] = "Moved Permanently";
+    statusCode[400] = "Bad Request";
+    statusCode[401] = "Unauthorized";
+    statusCode[403] = "Forbidden";
+    statusCode[404] = "Not Found";
+    statusCode[405] = "Method Not Allowed";
+    statusCode[409] = "Conflict";
+    statusCode[413] = "Request Entity Too Large";
+    statusCode[414] = "Request_URI Too Long";
+    statusCode[500] = "Internal Server Error";
+    statusCode[501] = "Not Implemented";
+    statusCode[505] = "HTTP Version Not Supported";
+}
+
+void    mimeTypesInitializer()
+{
+    mimeTypes[".aac"]    =  "audio/aac";
+    mimeTypes[".abw"]    =  "application/x-abiword";
+    mimeTypes[".arc"]    =  "application/x-freearc";
+    mimeTypes[".avi"]    =  "video/x-msvideo";
+    mimeTypes[".azw"]    =  "application/vnd.amazon.ebook";
+    mimeTypes[".bin"]    =  "application/octet-stream";
+    mimeTypes[".bmp"]    =  "image/bmp";
+    mimeTypes[".bz"]     =  "application/x-bzip";
+    mimeTypes[".bz2"]    =  "application/x-bzip2";
+    mimeTypes[".csh"]    =  "application/x-csh";
+    mimeTypes[".css"]    =  "text/css";
+    mimeTypes[".csv"]    =  "text/csv";
+    mimeTypes[".doc"]    =  "application/msword";
+    mimeTypes[".docx"]   =  "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    mimeTypes[".eot"]    =  "application/vnd.ms-fontobject";
+    mimeTypes[".epub"]   =  "application/epub+zip";
+    mimeTypes[".gz"]     =  "application/gzip";
+    mimeTypes[".gif"]    =  "image/gif";
+    mimeTypes[".htm"]    =  "text/html";
+    mimeTypes[".html"]   =  "text/html";
+    mimeTypes[".ico"]    =  "image/vnd.microsoft.icon";
+    mimeTypes[".ics"]    =  "text/calendar";
+    mimeTypes[".jar"]    =  "application/java-archive";
+    mimeTypes[".jpeg"]   =  "image/jpeg";
+    mimeTypes[".jpg"]    =  "image/jpeg";
+    mimeTypes[".js"]     =  "text/javascript  ";
+    mimeTypes[".json"]   =  "application/json";
+    mimeTypes[".jsonld"] =  "application/ld+json";
+    mimeTypes[".mid"]    =  "audio/midi audio/x-midi";
+    mimeTypes[".midi"]   =  "audio/x-midi";
+    mimeTypes[".mjs"]    =  "text/javascript";
+    mimeTypes[".mp3"]    =  "audio/mpeg";
+    mimeTypes[".mpeg"]   =  "video/mpeg";
+    mimeTypes[".mpkg"]   =  "application/vnd.apple.installer+xml";
+    mimeTypes[".odp"]    =  "application/vnd.oasis.opendocument.presentation";
+    mimeTypes[".ods"]    =  "application/vnd.oasis.opendocument.spreadsheet";
+    mimeTypes[".odt"]    =  "application/vnd.oasis.opendocument.text";
+    mimeTypes[".oga"]    =  "audio/ogg";
+    mimeTypes[".ogv"]    =  "video/ogg";
+    mimeTypes[".ogx"]    =  "application/ogg";
+    mimeTypes[".opus"]   =  "audio/opus";
+    mimeTypes[".otf"]    =  "font/otf";
+    mimeTypes[".png"]    =  "image/png";
+    mimeTypes[".pdf"]    =  "application/pdf";
+    mimeTypes[".php"]    =  "application/x-httpd-php";
+    mimeTypes[".ppt"]    =  "application/vnd.ms-powerpoint";
+    mimeTypes[".pptx"]   =  "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+    mimeTypes[".rar"]    =  "application/vnd.rar";
+    mimeTypes[".rtf"]    =  "application/rtf";
+    mimeTypes[".sh"]     =  "application/x-sh";
+    mimeTypes[".svg"]    =  "image/svg+xml";
+    mimeTypes[".swf"]    =  "application/x-shockwave-flash";
+    mimeTypes[".tar"]    =  "application/x-tar";
+    mimeTypes[".tif"]    =  "image/tiff";
+    mimeTypes[".tiff"]   =  "image/tiff";
+    mimeTypes[".ts"]     =  "video/mp2t";
+    mimeTypes[".ttf"]    =  "font/ttf";
+    mimeTypes[".txt"]    =  "text/plain";
+    mimeTypes[".vsd"]    =  "application/vnd.visio";
+    mimeTypes[".wav"]    =  "audio/wav";
+    mimeTypes[".weba"]   =  "audio/webm";
+    mimeTypes[".webm"]   =  "video/webm";
+    mimeTypes[".webp"]   =  "image/webp";
+    mimeTypes[".woff"]   =  "font/woff";
+    mimeTypes[".woff2"]  =  "font/woff2";
+    mimeTypes[".xhtml"]  =  "application/xhtml+xml";
+    mimeTypes[".xls"]    =  "application/vnd.ms-excel";
+    mimeTypes[".xlsx"]   =  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    mimeTypes[".xml"]    =  "application/xml";
+    mimeTypes[".xul"]    =  "application/vnd.mozilla.xul+xml";
+    mimeTypes[".zip"]    =  "archive  application/zip";
+    mimeTypes[".3gp"]    =  "audio/video container  video/3gpp";
+    mimeTypes[".3g2"]    =  "audio/video ";
+    mimeTypes[".7z"]     =  "application/x-7z-compressed";
+
+    /*---------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    mimeTypes["audio/aac"]                                                                       =   ".aac";
+    mimeTypes["application/x-abiword"]                                                           =   ".abw";
+    mimeTypes["application/x-freearc"]                                                           =   ".arc";
+    mimeTypes["video/x-msvideo"]                                                                 =   ".avi";
+    mimeTypes["application/vnd.amazon.ebook"]                                                    =   ".azw";
+    mimeTypes["application/octet-stream"]                                                        =   ".bin";
+    mimeTypes["image/bmp"]                                                                       =   ".bmp";
+    mimeTypes["application/x-bzip"]                                                              =   ".bz";
+    mimeTypes["application/x-bzip2"]                                                             =   ".bz2";
+    mimeTypes["application/x-csh"]                                                               =   ".csh";
+    mimeTypes["text/css"]                                                                        =   ".css";
+    mimeTypes["text/csv"]                                                                        =   ".csv";
+    mimeTypes["application/msword"]                                                              =   ".doc";
+    mimeTypes["application/vnd.ms-fontobject"]                                                   =   ".eot";
+    mimeTypes["application/epub+zip"]                                                            =   ".epub";
+    mimeTypes["application/gzip"]                                                                =   ".gz";
+    mimeTypes["image/gif"]                                                                       =   ".gif";
+    mimeTypes["text/html"]                                                                       =   ".htm";
+    mimeTypes["text/html"]                                                                       =   ".html";
+    mimeTypes["image/vnd.microsoft.icon"]                                                        =   ".ico";
+    mimeTypes["text/calendar"]                                                                   =   ".ics";
+    mimeTypes["application/java-archive"]                                                        =   ".jar";
+    mimeTypes["image/jpeg"]                                                                      =   ".jpeg";
+    mimeTypes["image/jpeg"]                                                                      =   ".jpg";
+    mimeTypes["text/javascript  "]                                                               =   ".js";
+    mimeTypes["application/json"]                                                                =   ".json";
+    mimeTypes["application/ld+json"]                                                             =   ".jsonld";
+    mimeTypes["audio/midi audio/x-midi"]                                                         =   ".mid";
+    mimeTypes["audio/x-midi"]                                                                    =   ".midi";
+    mimeTypes["text/javascript"]                                                                 =   ".mjs";
+    mimeTypes["audio/mpeg"]                                                                      =   ".mp3";
+    mimeTypes["video/mpeg"]                                                                      =   ".mpeg";
+    mimeTypes["audio/ogg"]                                                                       =   ".oga";
+    mimeTypes["video/ogg"]                                                                       =   ".ogv";
+    mimeTypes["application/ogg"]                                                                 =   ".ogx";
+    mimeTypes["audio/opus"]                                                                      =   ".opus";
+    mimeTypes["font/otf"]                                                                        =   ".otf";
+    mimeTypes["image/png"]                                                                       =   ".png";
+    mimeTypes["application/pdf"]                                                                 =   ".pdf";
+    mimeTypes["application/x-httpd-php"]                                                         =   ".php";
+    mimeTypes["application/vnd.ms-powerpoint"]                                                   =   ".ppt";
+    mimeTypes["application/vnd.rar"]                                                             =   ".rar";
+    mimeTypes["application/rtf"]                                                                 =   ".rtf";
+    mimeTypes["application/x-sh"]                                                                =   ".sh";
+    mimeTypes["image/svg+xml"]                                                                   =   ".svg";
+    mimeTypes["application/x-shockwave-flash"]                                                   =   ".swf";
+    mimeTypes["application/x-tar"]                                                               =   ".tar";
+    mimeTypes["image/tiff"]                                                                      =   ".tif";
+    mimeTypes["image/tiff"]                                                                      =   ".tiff";
+    mimeTypes["video/mp2t"]                                                                      =   ".ts";
+    mimeTypes["font/ttf"]                                                                        =   ".ttf";
+    mimeTypes["text/plain"]                                                                      =   ".txt";
+    mimeTypes["application/vnd.visio"]                                                           =   ".vsd";
+    mimeTypes["audio/wav"]                                                                       =   ".wav";
+    mimeTypes["audio/webm"]                                                                      =   ".weba";
+    mimeTypes["video/webm"]                                                                      =   ".webm";
+    mimeTypes["image/webp"]                                                                      =   ".webp";
+    mimeTypes["font/woff"]                                                                       =   ".woff";
+    mimeTypes["font/woff2"]                                                                      =   ".woff2";
+    mimeTypes["application/xhtml+xml"]                                                           =   ".xhtml";
+    mimeTypes["application/vnd.ms-excel"]                                                        =   ".xls";
+    mimeTypes["application/xml"]                                                                 =   ".xml";
+    mimeTypes["application/vnd.mozilla.xul+xml"]                                                 =   ".xul";
+    mimeTypes["archive  application/zip"]                                                        =   ".zip";
+    mimeTypes["audio/video container  video/3gpp"]                                               =   ".3gp";
+    mimeTypes["audio/video "]                                                                    =   ".3g2";
+    mimeTypes["application/x-7z-compressed"]                                                     =   ".7z";
+    mimeTypes["application/vnd.apple.installer+xml"]                                             =   ".mpkg";
+    mimeTypes["application/vnd.oasis.opendocument.text"]                                         =   ".odt";
+    mimeTypes["application/vnd.oasis.opendocument.presentation"]                                 =   ".odp";
+    mimeTypes["application/vnd.oasis.opendocument.spreadsheet"]                                  =   ".ods";
+    mimeTypes["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]               =   ".xlsx";
+    mimeTypes["application/vnd.openxmlformats-officedocument.wordprocessingml.document"]         =   ".docx";
+    mimeTypes["application/vnd.openxmlformats-officedocument.presentationml.presentation"]       =   ".pptx";
 }
 
 void Client::send_error(int error_status)
 {
     response = "HTTP/1.1 " + std::to_string(error_status);
-    response += errorMes[error_status];
+    response += statusCode[error_status];
+    // if (error_status >= 300)
+    // {
+    //     resource = path/error_status.html;
+    // }
+   //loop for headerFields
+
+
 }
 
 int IsUriValid(std::string str)
@@ -73,15 +237,15 @@ void runCGI()
 
 void Client::GetFromFile()
 {
-    char    buff[2000];
+    char    buff[BUFFER_SIZE];
     if (Rfd == -1)
         Rfd = open(resource.data(), O_RDONLY);
-    int  len = read(Rfd, buff, 2000);
+    int  len = read(Rfd, buff, BUFFER_SIZE);
     std::stringstream stream;
     stream << std::hex << len;
     this->response += stream.str();
-    this->response += std::string(buff);
-    if (len < 2000)
+    this->response += "\r\n"+std::string(buff);
+    if (len < BUFFER_SIZE)
     {
         this->response += "0";
         phase = -1;
@@ -302,6 +466,7 @@ void    Client::GetHandler()
 {
     if (this->buffer == "")
     {
+        // resource = 400.html;
         send_error(404);
         return ;
     }
@@ -309,6 +474,7 @@ void    Client::GetHandler()
     {
         if (!hasSlash(resource))
         {
+            // resource = 301.html;
             send_error(301);
             return ;
         }
@@ -320,7 +486,12 @@ void    Client::GetHandler()
         if (!ft::isFile(filePath))
         {
             if (location->getAutoindex())
+            {
+                //add string auto index
+
+                // resource = autoindex+random.html
                 send_error(200);
+            }
             else
                 send_error(403);
             return ;
@@ -328,7 +499,10 @@ void    Client::GetHandler()
         resource = filePath;
     }
     if (!location->locationHasCgi())
+    {
+        //getfrom file
         send_error(200);
+    }
     else runCGI();
 }
 
@@ -343,6 +517,7 @@ void    Client::drop(fd_set &readMaster, fd_set &writeMaster)
 void    Client::clear()
 {
     phase = 0;
+    Rfd = -1;
     bytesUploaded = 0;
     uploadFile.close();
     uploadFile.clear();
