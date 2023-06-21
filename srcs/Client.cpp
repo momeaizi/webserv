@@ -354,30 +354,14 @@ void Client::parse()
 
         if (str == "")
         {
-
-
             if (methodType == "GET")
                 serve = &Client::GetHandler;
             else if (methodType == "POST")
                 serve = &Client::PostHandler;
             else
                 serve = &Client::DeleteHandler;
-
-
-            // this->phase = -1;
-
-
-
-
-
-
-
-
-
             return ;
         }
-
-        
         if (this->methodType == "") 
         {
             this->methodType = tok(str, " ");
@@ -387,35 +371,24 @@ void Client::parse()
 
             std::pair<std::string, Location*> loc = server.getMatchedLocation(URI);
             this->location = loc.second;
+            int errorCode = 0;
             if (!location)
-            {
-                setHeader(404);
-                return ;
-            }
-            
-            if (!IsMethodValid(methodType, location->getAllowedMethods()))
-            {
-                setHeader(405);
-                return ;
-            }
-
-            if (URI.length() > MAX)
-            {
-                setHeader(414); // 
-                return ;
-            }
-            if (!IsUriValid(URI))
-            {
-                setHeader(400);
-                return ;
-            }
+                errorCode = 404;
+            if (!errorCode && !IsMethodValid(methodType, location->getAllowedMethods()))
+                errorCode = 405;
+            if (!errorCode && URI.length() > MAX)
+                errorCode = 414;
+            if (!errorCode && !IsUriValid(URI))
+                errorCode = 400;
 
             this->resource = location->getRoot() + URI;
             first = str.find_first_not_of(' ');
             str = str.substr(first);
-            if (tok(str, "\r\n") != "HTTP/1.1")
+            if (!errorCode && tok(str, "\r\n") != "HTTP/1.1")
+                errorCode = 505;
+            if (errorCode)
             {
-                setHeader(505);
+                setHeader(errorCode);
                 return ;
             }
         }
@@ -426,7 +399,10 @@ void Client::parse()
             std::string     name  = to_lower(str.substr(0, index));
 
             if (this->headerFields.count(name) and index == -1)
-                return ;// send_400();
+            {
+                setHeader(400);
+                return ;
+            }
             std::string   val = str.substr(index + 1, len);
             headerFields [name] = trimString(val);
         }
@@ -501,9 +477,8 @@ void    Client::DeleteHandler()
 
 void    Client::GetHandler()
 {
-    if (this->buffer == "")
+    if (access(resource.data(), W_OK))
     {
-        // resource = 400.html;
         setHeader(404);
         return ;
     }
@@ -511,7 +486,6 @@ void    Client::GetHandler()
     {
         if (!hasSlash(resource))
         {
-            // resource = 301.html;
             setHeader(301);
             return ;
         }
@@ -527,7 +501,7 @@ void    Client::GetHandler()
                 std::string name = resource + initializeupload() +"autoindex.html";
                 StringOfCurrentContent(resource, name);
                 resource = name;
-                send_error(200);
+                setHeader(200);
             }
             else
                 setHeader(403);
@@ -536,10 +510,7 @@ void    Client::GetHandler()
         resource = filePath;
     }
     if (!location->locationHasCgi())
-    {
-        //getfrom file
         setHeader(200);
-    }
     else runCGI();
 }
 
