@@ -384,6 +384,10 @@ void Client::parse()
             if (!errorCode && !IsUriValid(URI))
                 errorCode = 400;
 
+            if (!this->location.getRedirection().second.empty())
+            {
+                response = ""
+            }
             this->resource = location->getRoot() + URI;
             first = str.find_first_not_of(' ');
             str = str.substr(first);
@@ -403,7 +407,7 @@ void Client::parse()
             int             len   = str.length();
             std::string     name  = to_lower(str.substr(0, index));
 
-            if (this->headerFields.count(name) and index == -1)
+            if (this->headerFields.count(name) or index == -1)
             {
                 setHeader(400);
                 return ;
@@ -498,8 +502,6 @@ void    Client::GetHandler()
         std::string filePath = resource;
         if(hasIndex(location->getIndex()))
                 filePath += location->getIndex();
-        else
-                filePath += "index.html";
         if (!ft::isFile(filePath))
         {
             if (location->getAutoindex())
