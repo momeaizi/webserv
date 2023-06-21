@@ -13,7 +13,8 @@ SRCS =	srcs/main.cpp \
 		srcs/errors.cpp \
 		srcs/filesCont.cpp \
 		srcs/string.cpp \
-		srcs/ConfigParser.cpp
+		srcs/ConfigParser.cpp \
+		srcs/autoindex.cpp
 
 OBJS:=$(SRCS:.cpp=.o)
 

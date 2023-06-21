@@ -203,32 +203,35 @@ void Client::setHeader(int statusCode)
 {
     response = "HTTP/1.1 " + std::to_string(statusCode) + " " + statusCodes[statusCode] + "\r\n";
 
-    if (statusCode >= 300)
+    if (statusCode != 200)
     {
         if (server.getErrorPages().count(statusCode))
             resource = server.getErrorPages().at(statusCode);
         else
-            resource = "../errorPages/" + std::to_string(statusCode) + ".html";
+            resource = "errorPages/" + std::to_string(statusCode) + ".html";
     }
 
     if (resource.length())
     {
         long    fileSize = GetFileSize(resource.data());
         size_t  found    = resource.find_last_of('.');
+        std::string key;
 
         if (found != std::string::npos)
-            std::string key = resource.substr(found, resource.length());
+            key = resource.substr(found, resource.length());
 
         if (found != std::string::npos && mimeTypes.count(key))
             response += "Content-Type: " + mimeTypes[key] + "\r\n";
         else
             response += "Content-Type: text/plain\r\n";
 
-        if (fileSize < 2048)
+        // if (fileSize < 2048)
             response += "Content-Length: " + std::to_string(fileSize) + "\r\n";
-        else
-            response += "Transfer-Encoding: chunked\r\n";
+        // else
+        //     response += "Transfer-Encoding: chunked\r\n";
     }
+    response += "\r\n";
+    serve = &Client::GetFromFile;
 }
 
 int IsUriValid(std::string str)
@@ -262,7 +265,7 @@ bool hasIndex(const std::string &index)
 
 void runCGI()
 {
-
+    std::cout << "CGI\n" << std::endl;
 }
 
 
@@ -271,23 +274,28 @@ void Client::GetFromFile()
     char    buff[BUFFER_SIZE];
     if (Rfd == -1)
         Rfd = open(resource.data(), O_RDONLY);
+    // else
+    //     this->response += "\r\n";
+
     struct stat st;
     stat(resource.data(), &st);
     int  len = read(Rfd, buff, 2048);
-    if (st.st_size > BUFFER_SIZE)
+    std::cout << "len is:" << len << std::endl;
+    if (len <= 0)
     {
-        std::stringstream stream;
-        stream << std::hex << len;
-        this->response += stream.str();
-    }
-    this->response += "\r\n"+std::string(buff);
-    if (len < BUFFER_SIZE)
-    {
-        if (st.st_size > BUFFER_SIZE)
-            this->response += "0";
+        // if (st.st_size > BUFFER_SIZE)
+        //     this->response += "0";
         phase = -1;
-        close(Rfd);
+        close(Rfd); // hayed 
+        return ;
     }
+    // if (st.st_size > BUFFER_SIZE)
+    // {
+    //     std::stringstream stream;
+    //     stream << std::hex << len;
+    //     this->response +=  stream.str() + "\r\n";
+    // }
+    this->response += std::string(buff, len);
 }
 
 std::string  Client::initializeupload()
@@ -332,11 +340,6 @@ void Client::upload()
     uploadFile << str;
     uploadFile.close();
 }
-
-
-
-
-
 
 void Client::parse()
 {
@@ -384,7 +387,9 @@ void Client::parse()
             this->resource = location->getRoot() + URI;
             first = str.find_first_not_of(' ');
             str = str.substr(first);
-            if (!errorCode && tok(str, "\r\n") != "HTTP/1.1")
+            std::string st = tok(str, "\r\n");
+            std::cout << "st:::: "<< "|" <<st << "|" << std::endl;
+            if (!errorCode && st != "HTTP/1.1")
                 errorCode = 505;
             if (errorCode)
             {
@@ -479,6 +484,7 @@ void    Client::GetHandler()
 {
     if (access(resource.data(), W_OK))
     {
+        std::cout << resource.data() <<std::endl;
         setHeader(404);
         return ;
     }
@@ -498,7 +504,7 @@ void    Client::GetHandler()
         {
             if (location->getAutoindex())
             {
-                std::string name = resource + initializeupload() +"autoindex.html";
+                std::string name = resource + initializeupload() + "autoindex.html";
                 StringOfCurrentContent(resource, name);
                 resource = name;
                 setHeader(200);
@@ -511,7 +517,8 @@ void    Client::GetHandler()
     }
     if (!location->locationHasCgi())
         setHeader(200);
-    else runCGI();
+    else
+        runCGI();
 }
 
 void    Client::drop(fd_set &readMaster, fd_set &writeMaster)
@@ -534,19 +541,6 @@ void    Client::clear()
     resource.clear();
     headerFields.clear();
     location = NULL;
+    serve = &Client::parse;
 }
 
-
-// int main()
-// {
-//     Client obj;
-//     while (obj.phase)
-//         obj.parse();
-//     obj.upload();
-//     std:: cout << std::endl << "RESPONS" << std::endl;
-//     std:: cout << "_________________" << std::endl;
-//     std::cout << "method is : " <<  obj.methodType << std::endl << "URI: " << obj.URI << " " << std::endl;
-//     std:: cout << "_________________" << std::endl;
-//     for(auto& el:obj.headerFields)
-//         std::cout << el.first << "\n" << el.second << std::endl<< std::endl;
-// }

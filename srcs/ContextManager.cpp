@@ -47,17 +47,16 @@ void    ContextManager::ioMultiplexer()
 			}
 		}
 
-		std::cout << "size -> " << clients.size() << std::endl;
+		// std::cout << "size -> " << clients.size() << std::endl;
 		for (std::list<Client>::iterator it = clients.begin(); it != clients.end();)
 		{
 			Client	&client = *it;
 
 			if (FD_ISSET(client.getClSocket(), &reads))
 			{
-				std::cout << "FD_ISSET read" <<std::endl;
+				// std::cout << "FD_ISSET read" <<std::endl;
 
 				bytes = recv(client.clSocket, buffer, 1024, 0);
-				std::cout << "after recv -> " << bytes << std::endl;
 				if (bytes <= 0)
 				{
 					client.drop(readMaster, writeMaster);
@@ -72,7 +71,7 @@ void    ContextManager::ioMultiplexer()
 	
 			if (FD_ISSET(client.getClSocket(), &writes))
 			{
-				std::cout << "FD_ISSET write" <<std::endl;
+				// std::cout << "FD_ISSET write" <<std::endl;
 				if (client.response.length())
 					if (send(client.getClSocket(), client.response.data(), client.response.length(), 0) < 0)
 						perror("Send -> ");
