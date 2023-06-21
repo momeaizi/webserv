@@ -275,7 +275,7 @@ void Client::GetFromFile()
     if (Rfd == -1)
         Rfd = open(resource.data(), O_RDONLY);
     else
-        this->response += "\r\n";
+        response += "\r\n";
 
     struct stat st;
     stat(resource.data(), &st);
@@ -283,13 +283,13 @@ void Client::GetFromFile()
     std::cout << "len is:" << len << std::endl;
     if (len <= 0)
     {
-        if (st.st_size > BUFFER_SIZE)
-            this->response += "0";
+        if (st.st_size > 2048)
+            this->response += "0\r\n\r\n";
         phase = -1;
         close(Rfd); // hayed 
         return ;
     }
-    if (st.st_size > BUFFER_SIZE)
+    if (st.st_size > 2048)
     {
         std::stringstream stream;
         stream << std::hex << len;
