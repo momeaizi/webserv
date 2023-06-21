@@ -20,16 +20,17 @@ std::vector<std::string>  ListOfCurrentContent(std::string path)
     return currentContent;
 }
 
-void StringOfCurrentContent(const std::string &path, const std::string &filename)
+void StringOfCurrentContent(const std::string &path, const std::string &filename, const std::string &uri)
 {
-    std::string response = "<!DOCTYPE html><html><body><h1>Index of " + path + "/</h1> <hr><ul>";
+    std::string response = "<!DOCTYPE html><html><body><h1>Index of " + uri + "</h1> <hr><ul>";
     std::vector<std::string> currentContent = ListOfCurrentContent(path);
     std::ofstream HTMLFILE(filename);
 
     HTMLFILE << response;
     for(size_t i = 0; i < currentContent.size(); i++)
     {
-        response = "<li><a href=\"" + currentContent[i] +"\">";
+        if (currentContent[i] == "./") continue;
+        response = "<li><a href=\"" + uri + currentContent[i] +"\">";
         if (currentContent[i].size() > 50)
             response += currentContent[i].substr(49) + "..>";
         else

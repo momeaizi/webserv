@@ -225,10 +225,10 @@ void Client::setHeader(int statusCode)
         else
             response += "Content-Type: text/plain\r\n";
 
-        // if (fileSize < 2048)
+        if (fileSize < 2048)
             response += "Content-Length: " + std::to_string(fileSize) + "\r\n";
-        // else
-        //     response += "Transfer-Encoding: chunked\r\n";
+        else
+            response += "Transfer-Encoding: chunked\r\n";
     }
     response += "\r\n";
     serve = &Client::GetFromFile;
@@ -274,8 +274,8 @@ void Client::GetFromFile()
     char    buff[BUFFER_SIZE];
     if (Rfd == -1)
         Rfd = open(resource.data(), O_RDONLY);
-    // else
-    //     this->response += "\r\n";
+    else
+        this->response += "\r\n";
 
     struct stat st;
     stat(resource.data(), &st);
@@ -283,18 +283,18 @@ void Client::GetFromFile()
     std::cout << "len is:" << len << std::endl;
     if (len <= 0)
     {
-        // if (st.st_size > BUFFER_SIZE)
-        //     this->response += "0";
+        if (st.st_size > BUFFER_SIZE)
+            this->response += "0";
         phase = -1;
         close(Rfd); // hayed 
         return ;
     }
-    // if (st.st_size > BUFFER_SIZE)
-    // {
-    //     std::stringstream stream;
-    //     stream << std::hex << len;
-    //     this->response +=  stream.str() + "\r\n";
-    // }
+    if (st.st_size > BUFFER_SIZE)
+    {
+        std::stringstream stream;
+        stream << std::hex << len;
+        this->response +=  stream.str() + "\r\n";
+    }
     this->response += std::string(buff, len);
 }
 
@@ -384,16 +384,11 @@ void Client::parse()
             if (!errorCode && !IsUriValid(URI))
                 errorCode = 400;
 
-            if (!this->location.getRedirection().second.empty())
-            {
-                response = ""
-            }
+
             this->resource = location->getRoot() + URI;
             first = str.find_first_not_of(' ');
             str = str.substr(first);
-            std::string st = tok(str, "\r\n");
-            std::cout << "st:::: "<< "|" <<st << "|" << std::endl;
-            if (!errorCode && st != "HTTP/1.1")
+            if (!errorCode && tok(str, "\r\n") != "HTTP/1.1")
                 errorCode = 505;
             if (errorCode)
             {
@@ -507,7 +502,7 @@ void    Client::GetHandler()
             if (location->getAutoindex())
             {
                 std::string name = resource + initializeupload() + "autoindex.html";
-                StringOfCurrentContent(resource, name);
+                StringOfCurrentContent(resource, name, URI);
                 resource = name;
                 setHeader(200);
             }

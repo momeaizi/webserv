@@ -11,6 +11,6 @@
 # include <iostream>
 # include <vector>
 
-void StringOfCurrentContent(const std::string &path, const std::string &filename);
+void StringOfCurrentContent(const std::string &path, const std::string &filename, const std::string &uri);
 
 #endif
