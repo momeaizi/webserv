@@ -340,8 +340,6 @@ void Client::chunkedUpload()
                     {
                         phase = -1;
                         setHeader(201);
-                        buffer = "";
-                        uploadFile.close();
                         return ;
                     }
                 }
@@ -409,7 +407,7 @@ void Client::upload()
     {
         chunked = 0;
         std::string extention = initializeupload() + mimeTypes[this->headerFields["content-type"]];
-        this->uploadFile.open(extention);
+        this->uploadFile.open(this->location->getUpload() + extention);
     }
     if (this->headerFields["transfer-encoding"] == "chunked")
         return chunkedUpload();
@@ -419,8 +417,6 @@ void Client::upload()
     {
         phase = -1;
         setHeader(201);
-        buffer = "";
-        uploadFile.close();
         return ;
     }
     if (this->buffer.size() + bytesUploaded <= ContentLength)
@@ -591,6 +587,7 @@ void    Client::GetHandler()
         {
             if (location->getAutoindex())
             {
+                std::cout << "auto index" << std::endl;
                 std::string name = "/tmp/" + initializeupload() + ".html";
                 StringOfCurrentContent(resource, name, URI);
                 resource = name;
