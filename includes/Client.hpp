@@ -39,6 +39,7 @@ class Client
         size_t                              chunked;
         Server                              &server;
         size_t                              bytesUploaded;
+        size_t                              resourceSize;
         std::ofstream                       uploadFile;
         std::string                         methodType;
         std::string                         URI;
@@ -56,7 +57,7 @@ class Client
     public:
 
         Client(int clSocket, Server &server, const std::string &ipAddress) : 
-                    clSocket(clSocket), phase(1), Rfd(-1), chunked(0), server(server), bytesUploaded(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)), serve(&Client::parse) {}
+                    clSocket(clSocket), phase(1), Rfd(-1), chunked(0), server(server), bytesUploaded(0), resourceSize(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)), serve(&Client::parse) {}
 
         Client  &operator= (const Client &cl)
         {
@@ -64,6 +65,7 @@ class Client
             phase = cl.phase;
             Rfd = cl.Rfd;
             bytesUploaded = cl.bytesUploaded;
+            resourceSize = cl.resourceSize;
             methodType = cl.methodType;
             URI = cl.URI;
             buffer = cl.buffer;
@@ -94,6 +96,7 @@ class Client
         std::string         initializeupload();
         void                drop(fd_set &readMaster, fd_set &writeMaster);
         void                clear();
+        void                redirect(int statusCode);
         void                setHeader(int error_status);
 
 

@@ -22,6 +22,7 @@ struct   Location
 
 
     public:
+        Location() : redirection(std::make_pair(0, "")) {}
 
         bool            locationHasCgi();
 
