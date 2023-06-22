@@ -36,6 +36,7 @@ class Client
         int                                 clSocket;
         int                                 phase;
         int                                 Rfd;
+        size_t                              chunked;
         Server                              &server;
         size_t                              bytesUploaded;
         std::ofstream                       uploadFile;
@@ -47,6 +48,7 @@ class Client
         std::map<std::string, std::string>  headerFields;
         std::string                         ipAddress;
         Location                            *location;
+        std::string                         boundary;
         time_t                              lastActivity;
         void                                (Client::*serve)( void );
     
@@ -54,7 +56,7 @@ class Client
     public:
 
         Client(int clSocket, Server &server, const std::string &ipAddress) : 
-                    clSocket(clSocket), phase(1), Rfd(-1), server(server), bytesUploaded(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)), serve(&Client::parse) {}
+                    clSocket(clSocket), phase(1), Rfd(-1), chunked(0), server(server), bytesUploaded(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)), serve(&Client::parse) {}
 
         Client  &operator= (const Client &cl)
         {
@@ -83,6 +85,8 @@ class Client
         ~Client() {};
         void                parse();
         void                upload();
+        void                chunkedUpload();
+        void                boundaryUpload();
         void                GetFromFile();
         void                PostHandler();
         void                DeleteHandler();
