@@ -62,6 +62,7 @@ void    mimeTypesInitializer()
     mimeTypes[".midi"]   =  "audio/x-midi";
     mimeTypes[".mjs"]    =  "text/javascript";
     mimeTypes[".mp3"]    =  "audio/mpeg";
+    mimeTypes[".mp4"]    =  "video/mp4";
     mimeTypes[".mpeg"]   =  "video/mpeg";
     mimeTypes[".mpkg"]   =  "application/vnd.apple.installer+xml";
     mimeTypes[".odp"]    =  "application/vnd.oasis.opendocument.presentation";
@@ -139,6 +140,7 @@ void    mimeTypesInitializer()
     mimeTypes["text/javascript"]                                                                 =   ".mjs";
     mimeTypes["audio/mpeg"]                                                                      =   ".mp3";
     mimeTypes["video/mpeg"]                                                                      =   ".mpeg";
+    mimeTypes["video/mp4"]                                                                       =   ".mp4";
     mimeTypes["audio/ogg"]                                                                       =   ".oga";
     mimeTypes["video/ogg"]                                                                       =   ".ogv";
     mimeTypes["application/ogg"]                                                                 =   ".ogx";
@@ -201,6 +203,8 @@ long GetFileSize(const char* filename)
 
 void Client::setHeader(int statusCode)
 {
+
+    std::cout << "*******************" << std::endl;
     response = "HTTP/1.1 " + std::to_string(statusCode) + " " + statusCodes[statusCode] + "\r\n";
 
     if (statusCode != 200)
@@ -318,19 +322,22 @@ void Client::chunkedUpload()
 {
     std::string str;
     size_t loc;
-
+    // std::cout << buffer << std::endl;
     while (buffer.size())
     {
-        std::cout << chunked << std::endl;
         if (!this->chunked)
         {
             loc = this->buffer.find("\r\n");
-            str = this->buffer.substr(0, loc);
-            this->chunked = std::stoi(str, nullptr, 16);
-            this->buffer = this->buffer.substr(loc + 2);
-            if (!this->chunked)
+            if (loc != std::string::npos)
+            {
+                str = this->buffer.substr(0, loc);
+                this->chunked = std::stoi(str, nullptr, 16);
+                this->buffer = this->buffer.substr(loc + 2);
+            }
+            else
             {
                 phase = -1;
+                uploadFile.close();
                 return ;
             }
         }
@@ -340,10 +347,10 @@ void Client::chunkedUpload()
             str = this->buffer.substr(0, this->chunked);
         uploadFile << str;
         loc = str.size();
-        if (buffer.size() > this->chunked) loc += 2;
+        if (buffer.size() > this->chunked) loc += 1;
         this->buffer = this->buffer.substr(loc);
-        std::cout << buffer << std::endl;
         this->chunked -= str.size();
+        this->bytesUploaded += str.size();
     }
 }
 
@@ -492,8 +499,9 @@ void Client::PostHandler()
 {
     if (location->getUpload() != "")
     {
-        setHeader(201);
         upload();
+        if (phase == -1)
+            setHeader(201);
         return ;
     }
     else if (!ft::isPathExists(resource))
