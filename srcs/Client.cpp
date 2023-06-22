@@ -501,7 +501,7 @@ void    Client::GetHandler()
         {
             if (location->getAutoindex())
             {
-                std::string name = resource + initializeupload() + "autoindex.html";
+                std::string name = "/tmp/" + initializeupload() + ".html";
                 StringOfCurrentContent(resource, name, URI);
                 resource = name;
                 setHeader(200);
