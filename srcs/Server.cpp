@@ -126,22 +126,27 @@ std::pair<std::string, Location*>    Server::getMatchedLocation(const std::strin
     size_t                                          max_len = 0;
     size_t                                          i = 0;
     std::pair<std::string, Location*>               location;
-    std::map<std::string, Location>::iterator   it = locations.begin();
+
+    std::map<std::string, Location>::iterator       it = locations.begin();
 
     for (; it != locations.end(); ++it)
     {
-        for (i = 0; i < it->first.length() && i < uri.length(); ++i)
+        const std::string &locationName = it->first;
+
+        for (i = 0; i < locationName.length() && i < uri.length(); ++i)
         {
-            if (it->first[i] != uri[i])
+            if (locationName[i] != uri[i])
                 break ;
         }
-        if (i > max_len)
+
+        if (i == locationName.length() && i > max_len)
         {
             max_len = i;
             location.first = it->first;
             location.second = &it->second;
         }
     }
+    std::cout << location.first << std::endl;
     return location;
 }
 

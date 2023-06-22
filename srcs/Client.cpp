@@ -6,6 +6,9 @@
 std::map<int, std::string>          statusCodes;
 std::map<std::string, std::string>  mimeTypes;
 
+bool hasSlash(const std::string &resource);
+
+
 
 void    InitstatusCodesage()
 {
@@ -187,23 +190,32 @@ void    mimeTypesInitializer()
 
 long GetFileSize(const char* filename)
 {
-    FILE* file = fopen(filename, "rb"); // Open the file in binary mode
+    struct stat st;
+    stat(filename, &st);
 
-    if (file != NULL)
-    {
-        fseek(file, 0, SEEK_END); // Seek to the end of the file
-        long size = ftell(file);  // Get the current position, which is the size of the file
-        fclose(file);             // Close the file
-        return size;
-    }
-
-    return -1; // Return -1 to indicate an error occurred
+    return st.st_size;
 }
 
+void    Client::redirect(int statusCode)
+{
+    std::pair<int, std::string> redirection = location->getRedirection();
+
+
+    if (redirection.first == statusCode)
+    {
+        if (redirection.second[0] == '/')
+            response += "Location: http://" + server.getHostName() + ":" + server.getPort() + redirection.second + "/\r\n";
+        else
+            response += "Location: " + redirection.second + "\r\n";
+
+    }
+    else
+        response += "Location: http://" + server.getHostName() + ":" + server.getPort() + URI + "/\r\n";
+}
 
 void Client::setHeader(int statusCode)
 {
-    std::cout << "**************************" << std::endl;
+
     response = "HTTP/1.1 " + std::to_string(statusCode) + " " + statusCodes[statusCode] + "\r\n";
     if (statusCode != 200)
     {
@@ -215,6 +227,7 @@ void Client::setHeader(int statusCode)
 
     if (resource.length())
     {
+
         long    fileSize = GetFileSize(resource.data());
         size_t  found    = resource.find_last_of('.');
         std::string key;
@@ -227,10 +240,15 @@ void Client::setHeader(int statusCode)
         else
             response += "Content-Type: text/plain\r\n";
 
+
         if (fileSize < 2048)
             response += "Content-Length: " + std::to_string(fileSize) + "\r\n";
         else
             response += "Transfer-Encoding: chunked\r\n";
+
+        if (statusCode >= 301 && statusCode <= 302)
+            redirect(statusCode);
+
     }
     response += "\r\n";
     std::cout << response << std::endl;
@@ -275,24 +293,24 @@ void runCGI()
 void Client::GetFromFile()
 {
     char    buff[BUFFER_SIZE];
+
+
     if (Rfd == -1)
         Rfd = open(resource.data(), O_RDONLY);
     else
         response += "\r\n";
 
-    struct stat st;
-    stat(resource.data(), &st);
     int  len = read(Rfd, buff, 2048);
     std::cout << "len is:" << len << std::endl;
     if (len <= 0)
     {
-        if (st.st_size > 2048)
+        if (resourceSize > 2048)
             this->response += "0\r\n\r\n";
         phase = -1;
         close(Rfd); // hayed 
         return ;
     }
-    if (st.st_size > 2048)
+    if (resourceSize > 2048)
     {
         std::stringstream stream;
         stream << std::hex << len;
@@ -464,6 +482,10 @@ void Client::parse()
             int errorCode = 0;
             if (!location)
                 errorCode = 404;
+            else
+                this->resource = location->getRoot() + URI;
+            if (!errorCode && location->getRedirection().first)
+                errorCode = location->getRedirection().first;
             if (!errorCode && !IsMethodValid(methodType, location->getAllowedMethods()))
                 errorCode = 405;
             if (!errorCode && URI.length() > MAX)
@@ -472,7 +494,6 @@ void Client::parse()
                 errorCode = 400;
 
 
-            this->resource = location->getRoot() + URI;
             first = str.find_first_not_of(' ');
             str = str.substr(first);
             if (!errorCode && tok(str, "\r\n") != "HTTP/1.1")
@@ -511,7 +532,7 @@ void Client::PostHandler()
         setHeader(404);
     if (ft::isDirectory(resource)) // create func
     {
-        if (!hasSlash(resource))
+        if (!hasSlash(URI))
         {
             setHeader(301);
             return ;

@@ -44,8 +44,13 @@ void    Location::setRedirection(std::vector<std::string> &tokens, unsigned int 
 		throw "invalid number of arguments in \"client_max_body_size\" directive in serv.conf:" + std::to_string(lineNumber);
 	
 	if (!containsOnlyDigits(tokens[1]))
-        throw "invalid return code \"" + tokens[1] + "\"";
-	redirection = make_pair(atoi(tokens[1].c_str()), tokens[2]);
+        throw "invalid return code \"" + tokens[1] + "\" in serv.conf:" + std::to_string(lineNumber);
+	int	code = atoi(tokens[1].c_str());
+
+	if (code > 302 || code < 301)
+        throw "return code must be 301 or 302 in serv.conf:" + std::to_string(lineNumber);;
+	
+	redirection = make_pair(code, tokens[2]);
 }
 
 void    Location::setCgi(std::vector<std::string> &tokens, unsigned int lineNumber)
