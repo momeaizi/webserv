@@ -405,8 +405,6 @@ void Client::boundaryUpload()
         std::string name;
         for (it = lines.begin(); it != lines.end(); it++)
         {
-                
-            
             str = *it;
             if(str == "")
                 break;
@@ -420,6 +418,7 @@ void Client::boundaryUpload()
                     name = str.substr(loc + 10);
             }
         }
+        // std::cout << name << std::endl;
         loc = name.find("\"");
         this->uploadFile.open(this->location->getUpload() + name.substr(0, loc));
     }
