@@ -253,6 +253,12 @@ void Client::setHeader(int statusCode)
     response += "\r\n";
     std::cout << response << std::endl;
     serve = &Client::GetFromFile;
+    if (resource != "")
+    {
+        struct stat st;
+        stat(resource.data(), &st);
+        resourceSize = st.st_size;
+    }
 }
 
 int IsUriValid(std::string str)
@@ -294,20 +300,17 @@ void Client::GetFromFile()
 {
     char    buff[BUFFER_SIZE];
 
-
     if (Rfd == -1)
         Rfd = open(resource.data(), O_RDONLY);
     else
         response += "\r\n";
 
     int  len = read(Rfd, buff, 2048);
-    std::cout << "len is:" << len << std::endl;
     if (len <= 0)
     {
         if (resourceSize > 2048)
             this->response += "0\r\n\r\n";
         phase = -1;
-        close(Rfd); // hayed 
         return ;
     }
     if (resourceSize > 2048)
@@ -317,7 +320,9 @@ void Client::GetFromFile()
         this->response +=  stream.str() + "\r\n";
     }
     this->response += std::string(buff, len);
+    std::cout << response << std::endl;
 }
+
 
 std::string  Client::initializeupload()
 {
@@ -334,7 +339,6 @@ std::string  Client::initializeupload()
     return FileName;
 }
 
-  
 void Client::chunkedUpload()
 {
     std::string str;
@@ -356,7 +360,6 @@ void Client::chunkedUpload()
                     this->buffer = this->buffer.substr(loc + 2);
                     if(!chunked)
                     {
-                        phase = -1;
                         setHeader(201);
                         return ;
                     }
@@ -381,39 +384,59 @@ void Client::chunkedUpload()
 
 void Client::boundaryUpload()
 {
-    // std::string str;
-    // size_t loc;
+    std::string str;
+    size_t loc;
 
-    // if (this->buffer == this->boundary + "--")
-    // {
-    //     phase = -1;
-    //     return ;
-    // }
-    // if (this->boundary == "")
-    //     this->boundary = this->headerFields["content-type"].substr(21);
-    // if (buffer.substr(0, boundary.size()) == boundary)
-    // {
-    //     if (uploadFile.is_open())
-    //         uploadFile.close();
-    //     std::list<std::string> lines = getlines(buffer);
-    //     std::list<std::string>::iterator it;
-    //     for (it = lines.begin(); it != lines.end(); it++)
-    //     {
-    //         str = *it;
-    //         if(str == "")
-    //             break;
-    //         loc = str.find("filename=");
-    //         if (loc != std::string::npos)
-    //             this->uploadFile.open(str.substr(loc + 10));
-    //     }
-    // }
-    // loc = str.find(this->boundary);
-    // if (loc != std::string::npos)
-    //     str = buffer.substr(0, loc);
-    // else
-    //     str = buffer;
-    // uploadFile << str;
-    // buffer = buffer.substr(str.size());
+    if (this->boundary == "")
+        this->boundary = "--" + this->headerFields["content-type"].substr(30);
+
+    if (buffer.substr(0, boundary.size()) == boundary)
+    {
+        if(buffer.substr(0, boundary.size() + 2) == boundary + "--")
+        {
+            uploadFile.close();
+            setHeader(201);
+            return ;
+        }
+        if (uploadFile.is_open())
+            uploadFile.close();
+        std::list<std::string> lines = getlines(buffer);
+        std::list<std::string>::iterator it;
+        std::string name;
+        for (it = lines.begin(); it != lines.end(); it++)
+        {
+                
+            
+            str = *it;
+            if(str == "")
+                break;
+            loc = str.find("filename=");
+            if (loc != std::string::npos)
+                name = str.substr(loc + 10);
+            else
+            {
+                loc = str.find("name=");
+                if (loc != std::string::npos)
+                    name = str.substr(loc + 10);
+            }
+        }
+        loc = name.find("\"");
+        this->uploadFile.open(this->location->getUpload() + name.substr(0, loc));
+    }
+    loc = buffer.find("\r\n" + boundary);
+    if (loc == std::string::npos)
+    {
+        str = buffer;
+        loc = 0;
+    }
+    else
+    {
+        str = buffer.substr(0, loc);
+        loc = 2;
+    }
+    uploadFile << str;
+    buffer = buffer.substr(str.size() + loc);
+    this->bytesUploaded += str.size();
 }
 
 void Client::upload()
@@ -433,7 +456,6 @@ void Client::upload()
     size_t ContentLength = stoi(this->headerFields["content-length"]);
     if (bytesUploaded == ContentLength)
     {
-        phase = -1;
         setHeader(201);
         return ;
     }
@@ -590,7 +612,7 @@ void    Client::GetHandler()
 {
     if (access(resource.data(), W_OK))
     {
-        std::cout << resource.data() <<std::endl;
+        std::cout<<"404:" << resource.data() <<std::endl;
         setHeader(404);
         return ;
     }
@@ -608,7 +630,6 @@ void    Client::GetHandler()
         {
             if (location->getAutoindex())
             {
-                std::cout << "auto index" << std::endl;
                 std::string name = "/tmp/" + initializeupload() + ".html";
                 StringOfCurrentContent(resource, name, URI);
                 resource = name;
@@ -621,7 +642,7 @@ void    Client::GetHandler()
         resource = filePath;
     }
     if (!location->locationHasCgi())
-        setHeader(200);
+        {std::cout << resource << std::endl;setHeader(200);}
     else
         runCGI();
 }
