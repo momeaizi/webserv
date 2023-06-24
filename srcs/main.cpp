@@ -3,6 +3,7 @@
 
 fd_set  readMaster;
 fd_set  writeMaster;
+int     maxFds;
 // void    testParsing()
 // {
 //     try
@@ -83,7 +84,7 @@ fd_set  writeMaster;
 int main()
 {
     // testParsing();
-
+    maxFds = 0;
     InitstatusCodesage();
     mimeTypesInitializer();
     try

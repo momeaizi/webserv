@@ -37,6 +37,9 @@ void        Server::openSocket()
     freeaddrinfo(bind_address);
 
     FD_SET(socket_listen, &readMaster);
+
+    if (socket_listen > maxFds)
+        maxFds = socket_listen;
 }
 
 
@@ -71,6 +74,9 @@ int         Server::acceptClient(std::list<Client> &clients)
 
     FD_SET(socket_client, &readMaster);
     FD_SET(socket_client, &writeMaster);
+
+    if (socket_client > maxFds)
+        maxFds = socket_client;
 
     return 0;
 }
@@ -146,7 +152,7 @@ std::pair<std::string, Location*>    Server::getMatchedLocation(const std::strin
             location.second = &it->second;
         }
     }
-    std::cout << location.first << std::endl;
+
     return location;
 }
 

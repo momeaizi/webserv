@@ -23,6 +23,7 @@
 # define ALLOWED_CHAR_IN_URI     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~!$&'()*+,;=:@/?#[]"
 
 
+
 std::string     trimString(const std::string &str);
 int             deleteDir(const char* path);
 void            InitstatusCodesage();
@@ -43,6 +44,7 @@ class Client
         std::ofstream                       uploadFile;
         std::string                         methodType;
         std::string                         URI;
+        std::string                         querieString;
         std::string                         buffer;
         std::string                         response;
         std::string                         resource;

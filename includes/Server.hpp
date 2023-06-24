@@ -26,6 +26,7 @@
 
 extern fd_set  readMaster;
 extern fd_set  writeMaster;
+extern int     maxFds;
 
 class Client;
 

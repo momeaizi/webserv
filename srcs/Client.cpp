@@ -227,10 +227,8 @@ void Client::setHeader(int statusCode)
 
     if (resource.length())
     {
-
-        long    fileSize = GetFileSize(resource.data());
-        size_t  found    = resource.find_last_of('.');
         std::string key;
+        size_t      found = resource.find_last_of('.');
 
         if (found != std::string::npos)
             key = resource.substr(found, resource.length());
@@ -241,24 +239,23 @@ void Client::setHeader(int statusCode)
             response += "Content-Type: text/plain\r\n";
 
 
-        if (fileSize < 2048)
-            response += "Content-Length: " + std::to_string(fileSize) + "\r\n";
+        resourceSize = GetFileSize(resource.data());
+        if (resourceSize < 2048)
+            response += "Content-Length: " + std::to_string(resourceSize) + "\r\n";
         else
             response += "Transfer-Encoding: chunked\r\n";
+
+        if (headerFields.count("connection") and headerFields["connection"] != "Keep-Alive")
+            response += "Connection: Keep-Alive\r\n";
+
 
         if (statusCode >= 301 && statusCode <= 302)
             redirect(statusCode);
 
+        serve = &Client::GetFromFile;
     }
     response += "\r\n";
-    std::cout << response << std::endl;
-    serve = &Client::GetFromFile;
-    if (resource != "")
-    {
-        struct stat st;
-        stat(resource.data(), &st);
-        resourceSize = st.st_size;
-    }
+
 }
 
 int IsUriValid(std::string str)
@@ -320,7 +317,6 @@ void Client::GetFromFile()
         this->response +=  stream.str() + "\r\n";
     }
     this->response += std::string(buff, len);
-    std::cout << response << std::endl;
 }
 
 
@@ -330,11 +326,11 @@ std::string  Client::initializeupload()
 
     time_t now = time(NULL);
     tm *gmtm = gmtime(&now);
-    FileName = std::to_string(gmtm->tm_mday) + ":";
-    FileName += std::to_string(gmtm->tm_mon + 1) + ":";
+    FileName  = std::to_string(gmtm->tm_mday) + "_";
+    FileName += std::to_string(gmtm->tm_mon + 1) + "_";
     FileName += std::to_string(1900 + gmtm->tm_year) + "_";
-    FileName += std::to_string(gmtm->tm_hour + 5) + ":";
-    FileName += std::to_string(gmtm->tm_min + 30) + ":";
+    FileName += std::to_string(gmtm->tm_hour + 5) + "_";
+    FileName += std::to_string(gmtm->tm_min + 30) + "_";
     FileName += std::to_string(gmtm->tm_sec);
     return FileName;
 }
@@ -343,42 +339,42 @@ void Client::chunkedUpload()
 {
     std::string str;
     size_t loc;
-        while (buffer.size())
+    while (buffer.size())
+    {
+        if (!this->chunked)
         {
-            if (!this->chunked)
+            loc = this->buffer.find("\r\n");
+            if (!loc)
             {
+                this->buffer = this->buffer.substr(loc + 2);
                 loc = this->buffer.find("\r\n");
-                if (!loc)
-                {
-                    this->buffer = this->buffer.substr(loc + 2);
-                    loc = this->buffer.find("\r\n");
-                }
-                if (loc != std::string::npos)
-                {
-                    str = this->buffer.substr(0, loc);
-                    this->chunked = std::stol(str, nullptr, 16);
-                    this->buffer = this->buffer.substr(loc + 2);
-                    if(!chunked)
-                    {
-                        setHeader(201);
-                        return ;
-                    }
-                }
-                else
-                    return ;
             }
-
-            if (buffer.size() < this->chunked)
-                str = this->buffer.substr(0, buffer.size());
+            if (loc != std::string::npos)
+            {
+                str = this->buffer.substr(0, loc);
+                this->chunked = std::stol(str, nullptr, 16);
+                this->buffer = this->buffer.substr(loc + 2);
+                if(!chunked)
+                {
+                    setHeader(201);
+                    return ;
+                }
+            }
             else
-                str = this->buffer.substr(0, this->chunked);
-            uploadFile << str;
-            loc = str.size();
-            if (buffer.size() > this->chunked) loc += 2;
-            if (buffer.size() < loc) loc = buffer.size();
-            this->buffer = this->buffer.substr(loc);
-            this->chunked -= str.size();
-            this->bytesUploaded += str.size();
+                return ;
+        }
+
+        if (buffer.size() < this->chunked)
+            str = this->buffer.substr(0, buffer.size());
+        else
+            str = this->buffer.substr(0, this->chunked);
+        uploadFile << str;
+        loc = str.size();
+        if (buffer.size() > this->chunked) loc += 2;
+        if (buffer.size() < loc) loc = buffer.size();
+        this->buffer = this->buffer.substr(loc);
+        this->chunked -= str.size();
+        this->bytesUploaded += str.size();
     }
 }
 
@@ -484,11 +480,12 @@ void Client::parse()
         if (str == "")
         {
             if (methodType == "GET")
-                serve = &Client::GetHandler;
+                this->serve = &Client::GetHandler;
             else if (methodType == "POST")
-                serve = &Client::PostHandler;
+                this->serve = &Client::PostHandler;
             else
-                serve = &Client::DeleteHandler;
+                this->serve = &Client::DeleteHandler;
+
             return ;
         }
         if (this->methodType == "") 
@@ -547,6 +544,7 @@ void Client::PostHandler()
     if (location->getUpload() != "")
     {
         serve = &Client::upload;
+        
         return;
     }
     else if (!ft::isPathExists(resource))
@@ -611,7 +609,6 @@ void    Client::GetHandler()
 {
     if (access(resource.data(), W_OK))
     {
-        std::cout<<"404:" << resource.data() <<std::endl;
         setHeader(404);
         return ;
     }
@@ -641,7 +638,7 @@ void    Client::GetHandler()
         resource = filePath;
     }
     if (!location->locationHasCgi())
-        {std::cout << resource << std::endl;setHeader(200);}
+        setHeader(200);
     else
         runCGI();
 }
@@ -657,8 +654,14 @@ void    Client::drop(fd_set &readMaster, fd_set &writeMaster)
 void    Client::clear()
 {
     phase = 0;
-    Rfd = -1;
+    if (Rfd != -1)
+    {
+        close(Rfd);
+        Rfd = -1;
+    }
+
     bytesUploaded = 0;
+    resourceSize = 0;
     uploadFile.close();
     uploadFile.clear();
     methodType.clear();
