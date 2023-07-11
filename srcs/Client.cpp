@@ -196,6 +196,28 @@ long GetFileSize(const char* filename)
     return st.st_size;
 }
 
+
+std::string URLDecode(const std::string &url)
+{
+    std::string decoded;
+    
+    for (std::size_t i = 0; i < url.length(); ++i)
+    {
+        if (url[i] == '%')
+        {
+            int hexValue = stoi(url.substr(i + 1, 2), nullptr, 16);
+            decoded += static_cast<char>(hexValue);
+            i += 2;
+        }
+        else if (url[i] == '+')
+            decoded += ' ';
+        else
+            decoded += url[i];
+    }
+    
+    return decoded;
+}
+
 void    Client::redirect(int statusCode)
 {
     std::pair<int, std::string> redirection = location->getRedirection();
@@ -260,12 +282,20 @@ void Client::setHeader(int statusCode)
 
 }
 
-int IsUriValid(std::string str)
+int IsUriValid(std::string &str)
 {
-    const std::string allowed = ALLOWED_CHAR_IN_URI;
-    for(size_t i = 0; i < str.size(); i++)
-        if (allowed.find(str[i]) ==std::string::npos)
+    const std::string &allowed = ALLOWED_CHAR_IN_URI;
+    for(size_t i = 0; i < str.size(); ++i)
+        if (allowed.find(str[i]) == std::string::npos)
             return 0;
+    try
+    {
+        str = URLDecode(str);
+    }
+    catch (...)
+    {
+        return 0;
+    }
     return 1; 
 }
 
@@ -493,15 +523,23 @@ void Client::parse()
         }
         if (this->methodType == "") 
         {
+            int errorCode = 0;
+
+
             this->methodType = tok(str, " ");
             first = str.find_first_not_of(' ');
             str = str.substr(first);
             URI = tok(str, " ");
 
+
+            if (!IsUriValid(URI))
+                errorCode = 400;
+
             std::pair<std::string, Location*> loc = server.getMatchedLocation(URI);
             this->location = loc.second;
-            int errorCode = 0;
-            if (!location)
+
+
+            if (!errorCode && !location)
                 errorCode = 404;
             else
                 this->resource = location->getRoot() + URI;
@@ -511,8 +549,6 @@ void Client::parse()
                 errorCode = 405;
             if (!errorCode && URI.length() > MAX)
                 errorCode = 414;
-            if (!errorCode && !IsUriValid(URI))
-                errorCode = 400;
 
 
             first = str.find_first_not_of(' ');
