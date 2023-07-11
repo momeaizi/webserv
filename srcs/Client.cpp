@@ -240,10 +240,12 @@ void Client::setHeader(int statusCode)
 
 
         resourceSize = GetFileSize(resource.data());
-        if (resourceSize < 2048)
-            response += "Content-Length: " + std::to_string(resourceSize) + "\r\n";
-        else
+
+        if (resourceSize > CHUNK_SIZE)
             response += "Transfer-Encoding: chunked\r\n";
+        else
+        response += "Content-Length: " + std::to_string(resourceSize) + "\r\n";
+
 
         if (headerFields.count("connection") and headerFields["connection"] != "Keep-Alive")
             response += "Connection: Keep-Alive\r\n";
@@ -299,18 +301,19 @@ void Client::GetFromFile()
 
     if (Rfd == -1)
         Rfd = open(resource.data(), O_RDONLY);
-    else
+    else if (resourceSize > CHUNK_SIZE)
         response += "\r\n";
 
-    int  len = read(Rfd, buff, 2048);
+
+    int  len = read(Rfd, buff, CHUNK_SIZE);
     if (len <= 0)
     {
-        if (resourceSize > 2048)
+        if (resourceSize > CHUNK_SIZE)
             this->response += "0\r\n\r\n";
         phase = -1;
         return ;
     }
-    if (resourceSize > 2048)
+    if (resourceSize > CHUNK_SIZE)
     {
         std::stringstream stream;
         stream << std::hex << len;

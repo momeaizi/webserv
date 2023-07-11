@@ -19,6 +19,7 @@
 # include <ctime>
 
 # define MAX 2048
+# define CHUNK_SIZE 2048
 # define BUFFER_SIZE 2048
 # define ALLOWED_CHAR_IN_URI     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~!$&'()*+,;=:@/?#[]"
 
@@ -59,7 +60,12 @@ class Client
     public:
 
         Client(int clSocket, Server &server, const std::string &ipAddress) : 
-                    clSocket(clSocket), phase(1), Rfd(-1), chunked(0), server(server), bytesUploaded(0), resourceSize(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)), serve(&Client::parse) {}
+                clSocket(clSocket), phase(1), Rfd(-1), chunked(0), server(server), bytesUploaded(0), resourceSize(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)), serve(&Client::parse)
+        {
+            fcntl(clSocket, F_SETFL, O_NONBLOCK);
+            int set = 1;
+            setsockopt(clSocket, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int)); 
+        }
 
         Client  &operator= (const Client &cl)
         {
