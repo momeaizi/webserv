@@ -188,7 +188,7 @@ void    mimeTypesInitializer()
     mimeTypes["application/vnd.openxmlformats-officedocument.presentationml.presentation"]       =   ".pptx";
 }
 
-long GetFileSize(const char* filename)
+long    GetFileSize(const char* filename)
 {
     struct stat st;
     stat(filename, &st);
@@ -196,6 +196,11 @@ long GetFileSize(const char* filename)
     return st.st_size;
 }
 
+bool    fileExists(const char* filename)
+{
+    std::ifstream file(filename);
+    return file.good();
+}
 
 std::string URLDecode(const std::string &url)
 {
@@ -247,7 +252,7 @@ void Client::setHeader(int statusCode)
             resource = "errorPages/" + std::to_string(statusCode) + ".html";
     }
 
-    if (resource.length())
+    if (fileExists(resource.data()))
     {
         std::string key;
         size_t      found = resource.find_last_of('.');
@@ -278,6 +283,8 @@ void Client::setHeader(int statusCode)
 
         serve = &Client::GetFromFile;
     }
+    else
+        phase = -1;
     response += "\r\n";
 
 }
@@ -385,8 +392,21 @@ void Client::chunkedUpload()
             if (loc != std::string::npos)
             {
                 str = this->buffer.substr(0, loc);
-                this->chunked = std::stol(str, nullptr, 16);
+                try
+                {
+                    this->chunked = std::stol(str, nullptr, 16);
+                }
+                catch (...)
+                {
+                    phase = -1;
+                    return ;
+                }
                 this->buffer = this->buffer.substr(loc + 2);
+                size_t  max_body_size = static_cast<size_t>(server.getClientMaxBodySize());
+                if (server.getClientMaxBodySize() != -1 && chunked > max_body_size)
+                {
+                    return setHeader(413);
+                }
                 if(!chunked)
                 {
                     setHeader(201);
@@ -481,11 +501,25 @@ void Client::upload()
     if (this->headerFields["transfer-encoding"] == "chunked")
         return chunkedUpload();
     std::string str;
-    size_t ContentLength = stoi(this->headerFields["content-length"]);
+    size_t ContentLength;
+    size_t max_body_size = static_cast<size_t>(server.getClientMaxBodySize());
+    try
+    {
+        ContentLength = stol(this->headerFields["content-length"]);
+    }
+    catch (...)
+    {
+        phase = -1;
+        return ;
+    }
+
+    if (server.getClientMaxBodySize() != -1 && ContentLength > max_body_size)
+    {
+        return setHeader(413);
+    }
     if (bytesUploaded == ContentLength)
     {
-        setHeader(201);
-        return ;
+        return setHeader(201);
     }
     if (this->buffer.size() + bytesUploaded <= ContentLength)
         str = buffer;

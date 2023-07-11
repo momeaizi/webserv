@@ -56,6 +56,7 @@ void    ContextManager::ioMultiplexer()
 		{
 			Client	&client = *it;
 
+			(client.*client.serve)();
 			if (FD_ISSET(client.getClSocket(), &reads))
 			{
 
@@ -73,10 +74,7 @@ void    ContextManager::ioMultiplexer()
 
 				client.buffer += std::string(buffer, bytes);
 			}
-
-			(client.*client.serve)();
-
-			if (FD_ISSET(client.getClSocket(), &writes))
+			else if (FD_ISSET(client.getClSocket(), &writes))
 			{
 				if (client.response.length())
 				{
@@ -92,11 +90,6 @@ void    ContextManager::ioMultiplexer()
 					else if (bytes)
 						client.lastActivity = time(NULL);
 
-
-
-					if ((size_t)bytes != client.response.length())
-						std::cout << "HERE!" << std::endl;
-		
 					client.response = client.response.substr(bytes);
 				}
 				

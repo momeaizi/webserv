@@ -15,7 +15,7 @@ class ConfigParser
         std::string                         buff;
         std::vector<std::string>            tokens;
         std::ifstream                       configFIle;
-        std::map<std::string, std::string>  hostPort;
+        std::set<std::string>               ports;
         std::vector<Server>                 &servers;
 
         void                                parseConfigFIle();

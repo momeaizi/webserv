@@ -55,16 +55,17 @@ int	ConfigParser::parseLocation(Location &location)
 void	ConfigParser::addServer()
 {
 
-	if (servers.size()) // fill out the last server with its config attributes
-	{
-		servers.back().attributeExaminer();
-	}
 
-	if (hostPort.count(servers.back().getHostName())) // if a server is already using the same port as this server then merge them
-		servers.pop_back();
+	if (!servers.size())
+		return ;
 
-	else if (servers.size()) // if no server is using the same port as this server then save its index in the memo "portServer"
-		hostPort[servers.back().getHostName()] = servers.back().getPort();
+	
+	servers.back().attributeExaminer();
+
+	if (ports.count(servers.back().getPort()))
+		throw "port already in use in serv.conf:" + std::to_string(lineNumber);
+
+	ports.insert(servers.back().getPort());
 
 }
 
@@ -72,9 +73,8 @@ int	 ConfigParser::parseServer()
 {
 	if (trimString(buff) == "server" && buff[0] == 's')
 	{
-
 		addServer();
-		servers.push_back(Server()); // push the server to the set
+		servers.push_back(Server());
 		return 1;
 	}
 
@@ -120,7 +120,7 @@ void	ConfigParser::parseConfigFIle()
 
 
 		if (!parseServer())
-			return ;
+			break ;
 	}
 
 	addServer();

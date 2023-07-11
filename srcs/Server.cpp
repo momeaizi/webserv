@@ -83,7 +83,7 @@ int         Server::acceptClient(std::list<Client> &clients)
 
 
 
-Server::Server() : socket_listen(-1) {}
+Server::Server() : socket_listen(-1), clientMaxBodySize(-1) {}
 
 Server::Server(const Server &serv)
 {
