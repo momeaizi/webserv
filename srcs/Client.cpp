@@ -331,7 +331,6 @@ void runCGI()
     std::cout << "CGI\n" << std::endl;
 }
 
-
 void Client::GetFromFile()
 {
     char    buff[BUFFER_SIZE];
@@ -358,7 +357,6 @@ void Client::GetFromFile()
     }
     this->response += std::string(buff, len);
 }
-
 
 std::string  Client::initializeupload()
 {
@@ -487,7 +485,7 @@ void Client::boundaryUpload()
     this->bytesUploaded += str.size();
 }
 
-void Client::upload()
+void Client::upload() 
 {
     if (this->headerFields["content-type"].substr(0, 20) == "multipart/form-data;")
         return boundaryUpload();
@@ -617,12 +615,14 @@ void Client::PostHandler()
     if (location->getUpload() != "")
     {
         serve = &Client::upload;
-        
         return;
     }
     else if (!ft::isPathExists(resource))
+    {
         setHeader(404);
-    if (ft::isDirectory(resource)) // create func
+        return ;
+    }
+    if (ft::isDirectory(resource))
     {
         if (!hasSlash(URI))
         {
@@ -653,10 +653,16 @@ int deleteDir(const char* path)
     while ((entry = readdir(dir)) != nullptr)
     {
         const char* filename = entry->d_name;
-        if (ft::isDirectory(filename))
-            if (!deleteDir(filename))
+        std::string strfile = std::string(filename);
+        if (strfile == ".." or strfile == ".")
+            continue;
+        strfile = std::string(path) + "/" + strfile;
+        if (ft::isDirectory(strfile.data()))
+            if (!deleteDir(strfile.data()))
                 return 0;
-        if (std::remove(filename) != 0)
+
+        std::cout << strfile.data() << std::endl;
+        if (remove(strfile.data()))
             return 0;
     }
     closedir(dir);
@@ -665,7 +671,10 @@ int deleteDir(const char* path)
 
 void    Client::DeleteHandler()
 {
-    if (ft::isFile(resource))
+    std::cout << "___ " << resource << std::endl;
+    if (access(resource.data(), W_OK))
+        setHeader(404);
+    else if (ft::isFile(resource))
     {
         remove(resource.data());
         setHeader(204);
@@ -723,7 +732,6 @@ void    Client::drop(fd_set &readMaster, fd_set &writeMaster)
     FD_CLR(clSocket, &writeMaster);
 }
 
-
 void    Client::clear()
 {
     phase = 0;
@@ -744,4 +752,3 @@ void    Client::clear()
     location = NULL;
     serve = &Client::parse;
 }
-
