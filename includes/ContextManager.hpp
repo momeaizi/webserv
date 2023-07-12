@@ -13,6 +13,9 @@
 #include "string.hpp"
 
 #define TIMEOUT 60
+#define DROPCLIENT  client.drop();\
+                    clients.erase(it++);\
+                    continue ;\
 
 extern fd_set  readMaster;
 extern fd_set  writeMaster;
@@ -24,8 +27,6 @@ class   ContextManager
         char	                            buffer[1024];
         std::vector<Server>                 servers;
         std::list<Client>                   clients;
-        fd_set  readMatser;
-        fd_set  writeMatser;
 
         ContextManager();
         void    openAndListen();
