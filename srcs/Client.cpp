@@ -196,12 +196,6 @@ long    GetFileSize(const char* filename)
     return st.st_size;
 }
 
-bool    fileExists(const char* filename)
-{
-    std::ifstream file(filename);
-    return file.good();
-}
-
 std::string URLDecode(const std::string &url)
 {
     std::string decoded;
@@ -252,7 +246,7 @@ void Client::setHeader(int statusCode)
             resource = "errorPages/" + std::to_string(statusCode) + ".html";
     }
 
-    if (fileExists(resource.data()))
+    if (ft::isFile(resource.data()))
     {
         std::string key;
         size_t      found = resource.find_last_of('.');
@@ -725,8 +719,9 @@ void    Client::GetHandler()
         runCGI();
 }
 
-void    Client::drop(fd_set &readMaster, fd_set &writeMaster)
+void    Client::drop()
 {
+    // client.clear();
     close(clSocket);
     FD_CLR(clSocket, &readMaster);
     FD_CLR(clSocket, &writeMaster);

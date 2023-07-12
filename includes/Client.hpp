@@ -23,7 +23,9 @@
 # define BUFFER_SIZE 2048
 # define ALLOWED_CHAR_IN_URI     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~!$&'()*+,;=:@/?#[]%"
 
-
+extern fd_set  readMaster;
+extern fd_set  writeMaster;
+extern int     maxFds;
 
 std::string     trimString(const std::string &str);
 int             deleteDir(const char* path);
@@ -102,7 +104,7 @@ class Client
         void                DeleteHandler();
         void                GetHandler();
         std::string         initializeupload();
-        void                drop(fd_set &readMaster, fd_set &writeMaster);
+        void                drop();
         void                clear();
         void                redirect(int statusCode);
         void                setHeader(int error_status);

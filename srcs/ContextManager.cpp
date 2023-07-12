@@ -51,7 +51,6 @@ void    ContextManager::ioMultiplexer()
 			}
 		}
 
-		// std::cout << "size -> " << clients.size() << std::endl;
 		for (std::list<Client>::iterator it = clients.begin(); it != clients.end();)
 		{
 			Client	&client = *it;
@@ -63,11 +62,7 @@ void    ContextManager::ioMultiplexer()
 				bytes = recv(client.clSocket, buffer, 1024, 0);
 				if (bytes <= 0)
 				{
-					std::cout << "RECV" << std::endl;
-					client.clear();
-					client.drop(readMaster, writeMaster);
-					clients.erase(it++);
-					continue ;
+					DROPCLIENT;
 				}
 
 				client.lastActivity = time(NULL);
@@ -81,11 +76,7 @@ void    ContextManager::ioMultiplexer()
 					bytes = send(client.getClSocket(), client.response.data(), client.response.length(), 0);
 					if (bytes < 0)
 					{
-						std::cout << "SEND" << std::endl;
-						client.clear();
-						client.drop(readMaster, writeMaster);
-						clients.erase(it++);
-						continue ;
+						DROPCLIENT;
 					}
 					else if (bytes)
 						client.lastActivity = time(NULL);
@@ -97,13 +88,12 @@ void    ContextManager::ioMultiplexer()
 
 			if (client.getPhase() == -1 || time(NULL) - client.lastActivity > TIMEOUT)
 			{
-				client.clear();
 
-				if (!client.headerFields.count("connection") or client.headerFields["connection"] != "Keep-Alive")
+				if (client.headerFields.count("connection") and client.headerFields["connection"] == "Keep-Alive")
+					client.clear();
+				else
 				{
-					client.drop(readMaster, writeMaster);
-					clients.erase(it++);
-					continue ;
+					DROPCLIENT;
 				}
 			}
 			++it;
