@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chunked File Upload</title>
+</head>
+<body>
+  <h1>Chunked File Upload</h1>
+
+  <input type="file" id="file-input">
+  <button onclick="uploadFile()">Upload</button>
+
+  <script>
+    function uploadFile() {
+      var fileInput = document.getElementById('file-input');
+      var file = fileInput.files[0];
+      var chunkSize = 1024 * 1024; // 1MB chunk size
+
+      var start = 0;
+      var end = Math.min(chunkSize, file.size);
+
+      while (start < file.size) {
+        var chunk = file.slice(start, end);
+
+        var formData = new FormData();
+        formData.append('file', chunk, file.name);
+
+        fetch('/upload', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          if (response.ok) {
+            console.log('Chunk uploaded successfully');
+          } else {
+            console.log('Error uploading chunk');
+          }
+        })
+        .catch(error => {
+          console.log('Error uploading chunk:', error);
+        });
+
+        start = end;
+        end = Math.min(start + chunkSize, file.size);
+      }
+
+      console.log('File upload complete');
+    }
+  </script>
+</body>
+</html>

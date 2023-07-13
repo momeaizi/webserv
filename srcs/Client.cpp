@@ -6,7 +6,6 @@
 std::map<int, std::string>          statusCodes;
 std::map<std::string, std::string>  mimeTypes;
 
-bool hasSlash(const std::string &resource);
 
 
 
@@ -188,34 +187,6 @@ void    mimeTypesInitializer()
     mimeTypes["application/vnd.openxmlformats-officedocument.presentationml.presentation"]       =   ".pptx";
 }
 
-long    GetFileSize(const char* filename)
-{
-    struct stat st;
-    stat(filename, &st);
-
-    return st.st_size;
-}
-
-std::string URLDecode(const std::string &url)
-{
-    std::string decoded;
-    
-    for (std::size_t i = 0; i < url.length(); ++i)
-    {
-        if (url[i] == '%')
-        {
-            int hexValue = stoi(url.substr(i + 1, 2), nullptr, 16);
-            decoded += static_cast<char>(hexValue);
-            i += 2;
-        }
-        else if (url[i] == '+')
-            decoded += ' ';
-        else
-            decoded += url[i];
-    }
-    
-    return decoded;
-}
 
 void    Client::redirect(int statusCode)
 {
@@ -260,7 +231,7 @@ void Client::setHeader(int statusCode)
             response += "Content-Type: text/plain\r\n";
 
 
-        resourceSize = GetFileSize(resource.data());
+        resourceSize = ft::GetFileSize(resource.data());
 
         if (resourceSize > CHUNK_SIZE)
             response += "Transfer-Encoding: chunked\r\n";
@@ -283,29 +254,6 @@ void Client::setHeader(int statusCode)
 
 }
 
-int IsUriValid(std::string &str)
-{
-    const std::string &allowed = ALLOWED_CHAR_IN_URI;
-    for(size_t i = 0; i < str.size(); ++i)
-        if (allowed.find(str[i]) == std::string::npos)
-            return 0;
-    try
-    {
-        str = URLDecode(str);
-    }
-    catch (...)
-    {
-        return 0;
-    }
-    return 1; 
-}
-
-int IsMethodValid(const std::string &method, const std::set<std::string> &allowedMethods)
-{
-    if (!allowedMethods.count(method))
-        return 0;
-    return 1; 
-}
 
 bool hasSlash(const std::string &resource)
 {
@@ -320,10 +268,7 @@ bool hasIndex(const std::string &index)
     return !index.empty();
 }
 
-void runCGI()
-{
-    std::cout << "CGI\n" << std::endl;
-}
+
 
 void Client::GetFromFile()
 {
@@ -352,376 +297,10 @@ void Client::GetFromFile()
     this->response += std::string(buff, len);
 }
 
-std::string  Client::initializeupload()
-{
-    std::string FileName;
-
-    time_t now = time(NULL);
-    tm *gmtm = gmtime(&now);
-    FileName  = std::to_string(gmtm->tm_mday) + "_";
-    FileName += std::to_string(gmtm->tm_mon + 1) + "_";
-    FileName += std::to_string(1900 + gmtm->tm_year) + "_";
-    FileName += std::to_string(gmtm->tm_hour + 5) + "_";
-    FileName += std::to_string(gmtm->tm_min + 30) + "_";
-    FileName += std::to_string(gmtm->tm_sec);
-    return FileName;
-}
-
-void Client::chunkedUpload()
-{
-    std::string str;
-    size_t loc;
-    while (buffer.size())
-    {
-        if (!this->chunked)
-        {
-            loc = this->buffer.find("\r\n");
-            if (!loc)
-            {
-                this->buffer = this->buffer.substr(loc + 2);
-                loc = this->buffer.find("\r\n");
-            }
-            if (loc != std::string::npos)
-            {
-                str = this->buffer.substr(0, loc);
-                try
-                {
-                    this->chunked = std::stol(str, nullptr, 16);
-                }
-                catch (...)
-                {
-                    phase = -1;
-                    return ;
-                }
-                this->buffer = this->buffer.substr(loc + 2);
-                size_t  max_body_size = static_cast<size_t>(server.getClientMaxBodySize());
-                if (server.getClientMaxBodySize() != -1 && chunked > max_body_size)
-                {
-                    return setHeader(413);
-                }
-                if(!chunked)
-                {
-                    setHeader(201);
-                    return ;
-                }
-            }
-            else
-                return ;
-        }
-
-        if (buffer.size() < this->chunked)
-            str = this->buffer.substr(0, buffer.size());
-        else
-            str = this->buffer.substr(0, this->chunked);
-        uploadFile << str;
-        loc = str.size();
-        if (buffer.size() > this->chunked) loc += 2;
-        if (buffer.size() < loc) loc = buffer.size();
-        this->buffer = this->buffer.substr(loc);
-        this->chunked -= str.size();
-        this->bytesUploaded += str.size();
-    }
-}
-
-void Client::boundaryUpload()
-{
-    std::string str;
-    size_t loc;
-
-    if (this->boundary == "")
-        this->boundary = "--" + this->headerFields["content-type"].substr(30);
-
-    if (buffer.substr(0, boundary.size()) == boundary)
-    {
-        if(buffer.substr(0, boundary.size() + 2) == boundary + "--")
-        {
-            uploadFile.close();
-            setHeader(201);
-            return ;
-        }
-        if (uploadFile.is_open())
-            uploadFile.close();
-        std::list<std::string> lines = getlines(buffer);
-        std::list<std::string>::iterator it;
-        std::string name;
-        for (it = lines.begin(); it != lines.end(); it++)
-        {
-            str = *it;
-            if(str == "")
-                break;
-            loc = str.find("filename=");
-            if (loc != std::string::npos)
-                name = str.substr(loc + 10);
-            else
-            {
-                loc = str.find("name=");
-                if (loc != std::string::npos)
-                    name = str.substr(loc + 10);
-            }
-        }
-        // std::cout << name << std::endl;
-        loc = name.find("\"");
-        this->uploadFile.open(this->location->getUpload() + name.substr(0, loc));
-    }
-    loc = buffer.find("\r\n" + boundary);
-    if (loc == std::string::npos)
-    {
-        str = buffer;
-        loc = 0;
-    }
-    else
-    {
-        str = buffer.substr(0, loc);
-        loc = 2;
-    }
-    uploadFile << str;
-    buffer = buffer.substr(str.size() + loc);
-    this->bytesUploaded += str.size();
-}
-
-void Client::upload() 
-{
-    if (this->headerFields["content-type"].substr(0, 20) == "multipart/form-data;")
-        return boundaryUpload();
-
-    if (!this->bytesUploaded)
-    {
-        chunked = 0;
-        std::string extention = initializeupload() + mimeTypes[this->headerFields["content-type"]];
-        this->uploadFile.open(this->location->getUpload() + extention);
-    }
-    if (this->headerFields["transfer-encoding"] == "chunked")
-        return chunkedUpload();
-    std::string str;
-    size_t ContentLength;
-    size_t max_body_size = static_cast<size_t>(server.getClientMaxBodySize());
-    try
-    {
-        ContentLength = stol(this->headerFields["content-length"]);
-    }
-    catch (...)
-    {
-        phase = -1;
-        return ;
-    }
-
-    if (server.getClientMaxBodySize() != -1 && ContentLength > max_body_size)
-    {
-        return setHeader(413);
-    }
-    if (bytesUploaded == ContentLength)
-    {
-        return setHeader(201);
-    }
-    if (this->buffer.size() + bytesUploaded <= ContentLength)
-        str = buffer;
-    else
-        str = buffer.substr(0, ContentLength - bytesUploaded);
-    uploadFile << str;
-    buffer = buffer.substr(str.size());
-    this->bytesUploaded += str.size();
-}
-
-void Client::parse()
-{
-    std::list<std::string>              lines;
-    std::list<std::string>::iterator    it;
-    size_t                              first;
-
-    lines = getlines(this->buffer);
-    if (lines.empty())
-        return ;
-
-    for (it = lines.begin(); it != lines.end(); it++)
-    {
-        std::string &str = *it;
-
-        if (str == "")
-        {
-            if (methodType == "GET")
-                this->serve = &Client::GetHandler;
-            else if (methodType == "POST")
-                this->serve = &Client::PostHandler;
-            else
-                this->serve = &Client::DeleteHandler;
-
-            return ;
-        }
-        if (this->methodType == "") 
-        {
-            int errorCode = 0;
-
-
-            this->methodType = tok(str, " ");
-            first = str.find_first_not_of(' ');
-            str = str.substr(first);
-            URI = tok(str, " ");
-
-
-            if (!IsUriValid(URI))
-                errorCode = 400;
-
-            std::pair<std::string, Location*> loc = server.getMatchedLocation(URI);
-            this->location = loc.second;
-
-
-            if (!errorCode && !location)
-                errorCode = 404;
-            else
-                this->resource = location->getRoot() + URI;
-            if (!errorCode && location->getRedirection().first)
-                errorCode = location->getRedirection().first;
-            if (!errorCode && !IsMethodValid(methodType, location->getAllowedMethods()))
-                errorCode = 405;
-            if (!errorCode && URI.length() > MAX)
-                errorCode = 414;
-
-
-            first = str.find_first_not_of(' ');
-            str = str.substr(first);
-            if (!errorCode && tok(str, "\r\n") != "HTTP/1.1")
-                errorCode = 505;
-            if (errorCode)
-            {
-                setHeader(errorCode);
-                return ;
-            }
-        }
-        else
-        {
-            int             index = str.find(":");
-            int             len   = str.length();
-            std::string     name  = to_lower(str.substr(0, index));
-
-            if (this->headerFields.count(name) or index == -1)
-            {
-                setHeader(400);
-                return ;
-            }
-            std::string   val = str.substr(index + 1, len);
-            headerFields [name] = trimString(val);
-        }
-    }
-}
-
-void Client::PostHandler()
-{
-    if (location->getUpload() != "")
-    {
-        serve = &Client::upload;
-        return;
-    }
-    else if (!ft::isPathExists(resource))
-    {
-        setHeader(404);
-        return ;
-    }
-    if (ft::isDirectory(resource))
-    {
-        if (!hasSlash(URI))
-        {
-            setHeader(301);
-            return ;
-        }
-        std::string filePath = resource;
-        if (hasIndex(location->getIndex()))
-            filePath += location->getIndex();
-        if (!ft::isFile(filePath))
-        {
-            setHeader(403);
-            return ;
-        }
-        resource = filePath;
-    }
-    if (!location->locationHasCgi())
-        setHeader(403);
-    else
-        runCGI();
-}
-
-int deleteDir(const char* path)
-{
-    DIR* dir = opendir(path);
-
-    dirent* entry;
-    while ((entry = readdir(dir)) != nullptr)
-    {
-        const char* filename = entry->d_name;
-        std::string strfile = std::string(filename);
-        if (strfile == ".." or strfile == ".")
-            continue;
-        strfile = std::string(path) + "/" + strfile;
-        if (ft::isDirectory(strfile.data()))
-            if (!deleteDir(strfile.data()))
-                return 0;
-
-        std::cout << strfile.data() << std::endl;
-        if (remove(strfile.data()))
-            return 0;
-    }
-    closedir(dir);
-    return 1;
-}
-
-void    Client::DeleteHandler()
-{
-    std::cout << "___ " << resource << std::endl;
-    if (access(resource.data(), W_OK))
-        setHeader(404);
-    else if (ft::isFile(resource))
-    {
-        remove(resource.data());
-        setHeader(204);
-    }
-    else if (deleteDir(resource.data()))
-        setHeader(204);
-    else if (access(resource.data(), W_OK))
-        setHeader(500);
-    else 
-        setHeader(403);
-}
-
-void    Client::GetHandler()
-{
-    if (access(resource.data(), W_OK))
-    {
-        setHeader(404);
-        return ;
-    }
-    if (ft::isDirectory(resource))
-    {
-        if (!hasSlash(resource))
-        {
-            setHeader(301);
-            return ;
-        }
-        std::string filePath = resource;
-        if(hasIndex(location->getIndex()))
-                filePath += location->getIndex();
-        if (!ft::isFile(filePath))
-        {
-            if (location->getAutoindex())
-            {
-                std::string name = "/tmp/" + initializeupload() + ".html";
-                StringOfCurrentContent(resource, name, URI);
-                resource = name;
-                setHeader(200);
-            }
-            else
-                setHeader(403);
-            return ;
-        }
-        resource = filePath;
-    }
-    if (!location->locationHasCgi())
-        setHeader(200);
-    else
-        runCGI();
-}
 
 void    Client::drop()
 {
-    // client.clear();
+    clear();
     close(clSocket);
     FD_CLR(clSocket, &readMaster);
     FD_CLR(clSocket, &writeMaster);

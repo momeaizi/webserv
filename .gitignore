@@ -1,0 +1,5 @@
+serv.conf
+*.o
+.DS_Store
+.vscode
+webserv

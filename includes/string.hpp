@@ -10,7 +10,6 @@
 
 #define buf 1024
 
-std::string                 trim(const std::string& str, const std::string t);
 std::string                 to_lower(const std::string &str);
 std::string                 tok(std::string &str, std::string sep);
 bool                        containsOnlyWhitespaces(const std::string& str);
@@ -18,5 +17,6 @@ bool                        containsOnlyDigits(const std::string& str);
 std::vector<std::string>    splitString(const std::string& str, char delimiter);
 std::string                 trimString(const std::string &str);
 std::list<std::string>      getlines(std::string  &str);
+
 
 #endif

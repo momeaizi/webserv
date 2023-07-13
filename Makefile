@@ -10,11 +10,16 @@ SRCS =	srcs/main.cpp \
 		srcs/Server.cpp \
 		srcs/ContextManager.cpp \
 		srcs/Location.cpp \
-		srcs/errors.cpp \
-		srcs/filesCont.cpp \
+		srcs/fileSystemUtils.cpp \
 		srcs/string.cpp \
 		srcs/ConfigParser.cpp \
-		srcs/autoindex.cpp
+		srcs/autoindex.cpp \
+		srcs/GET.cpp \
+		srcs/POST.cpp \
+		srcs/DELETE.cpp \
+		srcs/requestParser.cpp \
+		srcs/CGI.cpp \
+		
 
 OBJS:=$(SRCS:.cpp=.o)
 

@@ -2,8 +2,7 @@
 # define CLIENT_HPP
 # include "Location.hpp"
 # include "string.hpp"
-# include "errors.hpp"
-# include "filesCont.hpp"
+# include "fileSystemUtils.hpp"
 # include "autoindex.hpp"
 # include "Server.hpp"
 # include <sys/socket.h>
@@ -31,6 +30,9 @@ std::string     trimString(const std::string &str);
 int             deleteDir(const char* path);
 void            InitstatusCodesage();
 void            mimeTypesInitializer();
+bool            hasSlash(const std::string &resource);
+bool            hasIndex(const std::string &index);
+void            runCGI();
 
 class Server;
 

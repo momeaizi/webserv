@@ -24,8 +24,6 @@ int main()
         http.openAndListen();
         http.ioMultiplexer();
 
-
-
     }
     catch(const char *e)
     {

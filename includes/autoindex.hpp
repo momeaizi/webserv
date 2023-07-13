@@ -1,6 +1,6 @@
 # ifndef __AUTO_INDEX__HPP 
 # define __AUTO_INDEX__HPP
-# include "../includes/filesCont.hpp"
+# include "../includes/fileSystemUtils.hpp"
 # include <unistd.h>
 # include <fstream>
 # include <fcntl.h>

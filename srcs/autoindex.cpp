@@ -2,15 +2,15 @@
 # include <sys/stat.h>
 
 
-std::vector<std::string>  ListOfCurrentContent(std::string path)
+std::vector<std::string>  listOfCurrentContent(std::string path)
 {
-    DIR* dir = opendir(path.data());
-
-    dirent* entry;
+    DIR *dir = opendir(path.data());
+    dirent  *entry;
     std::vector<std::string> currentContent;
+
     while ((entry = readdir(dir)) != nullptr)
     {
-        std::string filepath(path+"/" + std::string(entry->d_name));
+        std::string filepath(path + "/" + std::string(entry->d_name));
 
         currentContent.push_back(std::string(entry->d_name));
         if (ft::isDirectory(filepath))
@@ -23,7 +23,7 @@ std::vector<std::string>  ListOfCurrentContent(std::string path)
 void StringOfCurrentContent(const std::string &path, const std::string &filename, const std::string &uri)
 {
     std::string response = "<!DOCTYPE html><html><body><h1>Index of " + uri + "</h1> <hr><ul>";
-    std::vector<std::string> currentContent = ListOfCurrentContent(path);
+    std::vector<std::string> currentContent = listOfCurrentContent(path);
     std::ofstream HTMLFILE(filename);
 
     HTMLFILE << response;

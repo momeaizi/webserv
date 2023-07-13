@@ -28,16 +28,6 @@ std::string to_lower(const std::string &str)
     return lower_str;
 }
 
-std::string trim(const std::string& str, const std::string t)
-{
-    size_t first = str.find_first_not_of(t);
-
-    if (first == std::string::npos)
-        return "";
-    size_t last = str.find_last_not_of(t);
-    return str.substr(first, (last - first + 1));
-}
-
 
 std::list<std::string> getlines(std::string  &str)
 {              
