@@ -47,7 +47,9 @@ void Client::upload()
     {
         chunked = 0;
         std::string extention = initializeupload() + mimeTypes[this->headerFields["content-type"]];
-        this->uploadFile.open(this->location->getUpload() + extention);
+        this->uploadFile.open(this->location->getUpload()+ "/" + extention);
+        if (!this->uploadFile.is_open())
+            std::cout << "is not opned!" << std::endl;
     }
     if (this->headerFields["transfer-encoding"] == "chunked")
         return chunkedUpload();
@@ -117,9 +119,8 @@ void    Client::boundaryUpload()
                     name = str.substr(loc + 10);
             }
         }
-        // std::cout << name << std::endl;
         loc = name.find("\"");
-        this->uploadFile.open(this->location->getUpload() + name.substr(0, loc));
+        this->uploadFile.open(this->location->getUpload() + "/" + name.substr(0, loc));
     }
     loc = buffer.find("\r\n" + boundary);
     if (loc == std::string::npos)

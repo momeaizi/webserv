@@ -268,8 +268,6 @@ bool hasIndex(const std::string &index)
     return !index.empty();
 }
 
-
-
 void Client::GetFromFile()
 {
     char    buff[BUFFER_SIZE];
