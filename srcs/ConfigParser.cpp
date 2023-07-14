@@ -1,6 +1,8 @@
 #include "../includes/ConfigParser.hpp"
 
 
+
+
 ConfigParser::ConfigParser(std::vector<Server> &servers) : lineNumber(0), configFIle("serv.conf"), servers(servers)
 {
 	if (!configFIle.is_open())
@@ -15,17 +17,32 @@ ConfigParser::ConfigParser(std::vector<Server> &servers) : lineNumber(0), config
 		
 }
 
+void	ConfigParser::getLine()
+{
+	buff.clear();
+	while (!configFIle.eof() && (!buff.length() || containsOnlyWhitespaces(buff)))
+	{
+		std::getline(configFIle, buff);
+		++lineNumber;
+
+		size_t	i = buff.find('#');
+		if (i != std::string::npos)
+			buff = buff.substr(0, i);
+		
+	}
+}
+
 int	ConfigParser::parseLocation(Location &location)
 {
 	if (tokens.size() != 2)
 		throw "invalid number of arguments in \"location\" directive in serv.conf:" + std::to_string(lineNumber);
 
-	while (std::getline(configFIle, buff))
+	while (!configFIle.eof())
 	{
-		++lineNumber;
+		getLine();
 
-		if (!buff.length() || containsOnlyWhitespaces(buff)) // SKIP EMPTY LINE
-			continue ;
+		if (buff.empty())
+			return 0;
 
 		tokens = splitString(buff, ' ');
 
@@ -109,12 +126,12 @@ int	 ConfigParser::parseServer()
 
 void	ConfigParser::parseConfigFIle()
 {
-	while (std::getline(configFIle, buff))
+	while (!configFIle.eof())
 	{
-		++lineNumber;
+		getLine();
 
-		if (!buff.length() || containsOnlyWhitespaces(buff))
-			continue ;
+		if (buff.empty())
+			break ;
 
 		tokens = splitString(buff, ' ');
 

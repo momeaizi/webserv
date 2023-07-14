@@ -35,10 +35,11 @@ bool            hasIndex(const std::string &index);
 void            runCGI();
 
 class Server;
+class ContextManager;
 
 class Client
 {
-    public:
+    private:
         int                                 clSocket;
         int                                 phase;
         int                                 Rfd;
@@ -62,7 +63,7 @@ class Client
     
 
     public:
-
+        friend class ContextManager;
         Client(int clSocket, Server &server, const std::string &ipAddress) : 
                 clSocket(clSocket), phase(1), Rfd(-1), chunked(0), server(server), bytesUploaded(0), resourceSize(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)), serve(&Client::parse)
         {

@@ -43,8 +43,10 @@ int IsUriValid(std::string &str)
 void    Client::setQuerieString()
 {
     size_t  i = URI.find('?');
+
     if (i == std::string::npos)
         return ;
+
     querieString = URI.substr(i + 1);
     URI = URI.substr(0, i);
 }

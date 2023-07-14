@@ -59,7 +59,7 @@ void    ContextManager::ioMultiplexer()
 			if (FD_ISSET(client.getClSocket(), &reads))
 			{
 
-				bytes = recv(client.clSocket, buffer, 1024, 0);
+				bytes = recv(client.getClSocket(), buffer, 1024, 0);
 				if (bytes <= 0)
 				{
 					DROPCLIENT;

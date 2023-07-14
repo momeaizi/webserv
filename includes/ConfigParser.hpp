@@ -22,6 +22,7 @@ class ConfigParser
         int                                 parseServer();
         int                                 parseLocation(Location &location);
         void	                            addServer();
+        void                                getLine();
 
     public:
         ConfigParser(std::vector<Server> &servers);

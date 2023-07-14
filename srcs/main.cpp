@@ -20,6 +20,8 @@ int main()
     {
         ContextManager  http;
 
+        if (!http.servers.size())
+            return 1;
 
         http.openAndListen();
         http.ioMultiplexer();
