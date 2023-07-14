@@ -39,15 +39,15 @@ void    mimeTypesInitializer()
     while (getline(mimeFile, line))
     {
         
-        line = line.substr(find_first_not(" \t"), find_last_not(" \t"));
+        line = line.substr(line.find_first_not_of(" \t"), line.find_last_not_of(" \t"));
         if (line.empty())
             continue;
-        int loc = line.find(" \t");
+        size_t loc = line.find(" \t");
         if (loc != std::string::npos)
         {
             std::string ext = "." + line.substr(0, loc);
             std::string type = line.substr(loc + 1);
-            type = type.substr(find_first_not(" \t"));
+            type = type.substr(line.find_first_not_of(" \t"));
 
             mimeTypes[ext] = type;
             mimeTypes[type] = ext;
