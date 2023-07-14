@@ -113,6 +113,7 @@ class Client
         void                redirect(int statusCode);
         void                setHeader(int error_status);
         void                runCGI();
+        void                fillCgiEnv();
 
 
         /*                              setters                                         */
