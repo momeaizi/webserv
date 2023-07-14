@@ -39,12 +39,25 @@ int IsUriValid(std::string &str)
     return 1; 
 }
 
+
+void    Client::setQuerieString()
+{
+    size_t  i = URI.find('?');
+    if (i == std::string::npos)
+        return ;
+    querieString = URI.substr(i + 1);
+    URI = URI.substr(0, i);
+}
+
+
+
 int IsMethodValid(const std::string &method, const std::set<std::string> &allowedMethods)
 {
     if (!allowedMethods.count(method))
         return 0;
     return 1; 
 }
+
 
 
 void Client::parse()
@@ -86,6 +99,8 @@ void Client::parse()
             if (!IsUriValid(URI))
                 errorCode = 400;
 
+            setQuerieString();
+            std::cout << "Q -> " << querieString << std::endl;
             std::pair<std::string, Location*> loc = server.getMatchedLocation(URI);
             this->location = loc.second;
 

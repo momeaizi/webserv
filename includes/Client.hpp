@@ -98,6 +98,7 @@ class Client
 
         ~Client() {};
         void                parse();
+        void                setQuerieString();
         void                upload();
         void                chunkedUpload();
         void                boundaryUpload();
@@ -124,5 +125,6 @@ class Client
         const std::string   &getResource() {return resource; }
         const std::string   &getIpAddress() { return ipAddress; }
 };
+
 
 #endif
