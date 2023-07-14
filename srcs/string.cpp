@@ -51,18 +51,12 @@ std::list<std::string> getlines(std::string  &str)
 
 std::string trimString(const std::string &str)
 {
+    size_t first = str.find_first_not_of(" \t");
 
-    std::string::const_iterator     start = str.begin();
-    std::string::const_iterator     end = str.end();
-
-    while (start != end && std::isspace(*start))
-        ++start;
-
-    do
-        --end;
-    while (end != start && std::isspace(*end));
-
-    return std::string(start, end + 1);
+    if (first == std::string::npos)
+        return "";
+    size_t last = str.find_last_not_of(" \t");
+    return str.substr(first, (last - first + 1));
 }
 
 

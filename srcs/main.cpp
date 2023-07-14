@@ -14,10 +14,10 @@ int     maxFds;
 int main()
 {
     InitstatusCodesage();
-    mimeTypesInitializer();
 
     try
     {
+        mimeTypesInitializer();
         ContextManager  http;
 
         if (!http.servers.size())

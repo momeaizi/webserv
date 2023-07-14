@@ -32,21 +32,27 @@ void    InitstatusCodesage()
 
 void    mimeTypesInitializer()
 {
-    std::ifstream mimeFile("mimeTypes");
+    std::ifstream mimeFile("mime.types");
     std::string   line;
+
     if (!mimeFile.is_open())
-		throw "mimeTypes File can't be opened!";
+		throw "mime.types File can't be opened!";
+
     while (getline(mimeFile, line))
     {
-        
-        line = line.substr(line.find_first_not_of(" \t"), line.find_last_not_of(" \t"));
+
+        line = trimString(line);
+    
         if (line.empty())
             continue;
-        size_t loc = line.find(" \t");
+
+        size_t loc = line.find(' ');
+        loc = std::min(loc , line.find('\t'));
+
         if (loc != std::string::npos)
         {
             std::string ext = "." + line.substr(0, loc);
-            std::string type = line.substr(loc + 1);
+            std::string type = line.substr(loc);
             type = type.substr(line.find_first_not_of(" \t"));
 
             mimeTypes[ext] = type;
@@ -149,7 +155,7 @@ void Client::GetFromFile()
 
     int  len = read(Rfd, buff, CHUNK_SIZE);
 
-    
+
     if (len <= 0)
     {
         if (resourceSize > CHUNK_SIZE)
