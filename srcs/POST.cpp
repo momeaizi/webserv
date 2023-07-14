@@ -7,7 +7,10 @@ void Client::PostHandler()
 {
     if (location->getUpload() != "")
     {
-        serve = &Client::upload;
+        if (!ft::isPathExists(location->getUpload()))
+            setHeader(404);
+        else
+            serve = &Client::upload;
         return;
     }
     else if (!ft::isPathExists(resource))
@@ -47,7 +50,7 @@ void Client::upload()
     {
         chunked = 0;
         std::string extention = initializeupload() + mimeTypes[this->headerFields["content-type"]];
-        this->uploadFile.open(this->location->getUpload() + extention);
+        this->uploadFile.open(this->location->getUpload()+ "/" + extention);
     }
     if (this->headerFields["transfer-encoding"] == "chunked")
         return chunkedUpload();
@@ -119,7 +122,7 @@ void    Client::boundaryUpload()
         }
         // std::cout << name << std::endl;
         loc = name.find("\"");
-        this->uploadFile.open(this->location->getUpload() + name.substr(0, loc));
+        this->uploadFile.open(this->location->getUpload() + "/" + name.substr(0, loc));
     }
     loc = buffer.find("\r\n" + boundary);
     if (loc == std::string::npos)
