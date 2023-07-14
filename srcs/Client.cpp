@@ -148,6 +148,8 @@ void Client::GetFromFile()
 
 
     int  len = read(Rfd, buff, CHUNK_SIZE);
+
+    
     if (len <= 0)
     {
         if (resourceSize > CHUNK_SIZE)

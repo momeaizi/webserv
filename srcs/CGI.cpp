@@ -1,6 +1,6 @@
 # include "../includes/Client.hpp"
 
-void runCGI()
+void Client::runCGI()
 {
     std::cout << "CGI\n" << std::endl;
 }
