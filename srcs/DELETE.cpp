@@ -2,7 +2,6 @@
 
 void    Client::DeleteHandler()
 {
-    std::cout << "___ " << resource << std::endl;
     if (access(resource.data(), W_OK))
         setHeader(404);
     else if (ft::isFile(resource))
@@ -34,7 +33,6 @@ int deleteDir(const char* path)
             if (!deleteDir(strfile.data()))
                 return 0;
 
-        std::cout << strfile.data() << std::endl;
         if (remove(strfile.data()))
             return 0;
     }

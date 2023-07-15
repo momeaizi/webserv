@@ -88,7 +88,6 @@ void    ContextManager::ioMultiplexer()
 
 			if (client.getPhase() == -1 || time(NULL) - client.lastActivity > TIMEOUT)
 			{
-
 				if (client.headerFields.count("connection") and client.headerFields["connection"] == "Keep-Alive")
 					client.clear();
 				else

@@ -3,11 +3,6 @@
 # include <cstdio>
 
 
-std::map<int, std::string>          statusCodes;
-std::map<std::string, std::string>  mimeTypes;
-
-
-
 
 void    InitstatusCodesage()
 {
@@ -52,8 +47,7 @@ void    mimeTypesInitializer()
         if (loc != std::string::npos)
         {
             std::string ext = "." + line.substr(0, loc);
-            std::string type = line.substr(loc);
-            type = type.substr(line.find_first_not_of(" \t"));
+            std::string type = trimString(line.substr(loc));
 
             mimeTypes[ext] = type;
             mimeTypes[type] = ext;
@@ -163,16 +157,17 @@ void Client::GetFromFile()
 {
     char    buff[BUFFER_SIZE];
 
-    if (Rfd == -1)
-        Rfd = open(resource.data(), O_RDONLY);
+    if (!uploadFile.is_open())
+        this->uploadFile.open(resource.c_str(), std::ios::in | std::ios::binary);
     else if (resourceSize > CHUNK_SIZE)
         response += "\r\n";
 
 
-    int  len = read(Rfd, buff, CHUNK_SIZE);
+    uploadFile.read(buff, CHUNK_SIZE);
+    std::streamsize bytesRead = uploadFile.gcount();
 
 
-    if (len <= 0)
+    if (bytesRead <= 0)
     {
         if (resourceSize > CHUNK_SIZE)
             this->response += "0\r\n\r\n";
@@ -182,10 +177,10 @@ void Client::GetFromFile()
     if (resourceSize > CHUNK_SIZE)
     {
         std::stringstream stream;
-        stream << std::hex << len;
+        stream << std::hex << bytesRead;
         this->response +=  stream.str() + "\r\n";
     }
-    this->response += std::string(buff, len);
+    this->response += std::string(buff, bytesRead);
 }
 
 
@@ -200,15 +195,11 @@ void    Client::drop()
 void    Client::clear()
 {
     phase = 0;
-    if (Rfd != -1)
-    {
-        close(Rfd);
-        Rfd = -1;
-    }
 
     bytesUploaded = 0;
     resourceSize = 0;
-    uploadFile.close();
+    if (uploadFile.is_open())
+        uploadFile.close();
     uploadFile.clear();
     methodType.clear();
     URI.clear();

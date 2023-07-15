@@ -28,6 +28,9 @@ extern fd_set  readMaster;
 extern fd_set  writeMaster;
 extern int     maxFds;
 
+extern std::map<int, std::string>          statusCodes;
+extern std::map<std::string, std::string>  mimeTypes;
+
 std::string     trimString(const std::string &str);
 int             deleteDir(const char* path);
 void            InitstatusCodesage();
@@ -44,12 +47,11 @@ class Client
         pid_t                               childPID;
         int                                 clSocket;
         int                                 phase;
-        int                                 Rfd;
         size_t                              chunked;
         Server                              &server;
         size_t                              bytesUploaded;
         size_t                              resourceSize;
-        std::ofstream                       uploadFile;
+        std::fstream                        uploadFile;
         std::string                         methodType;
         std::string                         URI;
         std::string                         querieString;
@@ -67,7 +69,7 @@ class Client
     public:
         friend class ContextManager;
         Client(int clSocket, Server &server, const std::string &ipAddress) : 
-                clSocket(clSocket), phase(1), Rfd(-1), chunked(0), server(server), bytesUploaded(0), resourceSize(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)), serve(&Client::parse)
+                clSocket(clSocket), phase(1), chunked(0), server(server), bytesUploaded(0), resourceSize(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)), serve(&Client::parse)
         {
             fcntl(clSocket, F_SETFL, O_NONBLOCK);
             int set = 1;
@@ -78,7 +80,6 @@ class Client
         {
             clSocket = cl.clSocket;
             phase = cl.phase;
-            Rfd = cl.Rfd;
             bytesUploaded = cl.bytesUploaded;
             resourceSize = cl.resourceSize;
             methodType = cl.methodType;

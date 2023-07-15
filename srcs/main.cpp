@@ -4,6 +4,8 @@
 fd_set  readMaster;
 fd_set  writeMaster;
 int     maxFds;
+std::map<int, std::string>          statusCodes;
+std::map<std::string, std::string>  mimeTypes;
 
 
 
