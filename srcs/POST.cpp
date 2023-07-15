@@ -50,7 +50,8 @@ void Client::upload()
     {
         chunked = 0;
         std::string extention = initializeupload() + mimeTypes[this->headerFields["content-type"]];
-        this->uploadFile.open(this->location->getUpload()+ "/" + extention);
+        if (!uploadFile.is_open()) // if is already opened in CGi
+            this->uploadFile.open(this->location->getUpload()+ "/" + extention);
     }
     if (this->headerFields["transfer-encoding"] == "chunked")
         return chunkedUpload();
@@ -73,7 +74,9 @@ void Client::upload()
     }
     if (bytesUploaded == ContentLength)
     {
-        return setHeader(201);
+        if (serve != &Client::writeInCGI)
+            setHeader(201);
+        return ;
     }
     if (this->buffer.size() + bytesUploaded <= ContentLength)
         str = buffer;
@@ -173,7 +176,8 @@ void Client::chunkedUpload()
                 }
                 if(!chunked)
                 {
-                    setHeader(201);
+                    if (serve != &Client::writeInCGI)
+                        setHeader(201);
                     return ;
                 }
             }

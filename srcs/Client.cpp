@@ -80,6 +80,22 @@ void    Client::redirect(int statusCode)
         response += "Location: http://" + server.getHostName() + ":" + server.getPort() + URI + "/\r\n";
 }
 
+
+void    Client::writeInCGI()
+{
+    int     status;
+
+    upload();
+    waitpid(childPID, &status, 0);
+    if (WIFEXITED(status))
+    {
+        int exitStatus = WEXITSTATUS(status);
+
+        response = "HTTP/1.1 " + std::to_string(exitStatus) + " " + statusCodes[exitStatus] + "\r\n"; // change exitSatus by the satus header
+        serve = &Client::CGIHeaders;
+    }
+}
+
 void Client::setHeader(int statusCode)
 {
 
@@ -111,7 +127,7 @@ void Client::setHeader(int statusCode)
         if (resourceSize > CHUNK_SIZE)
             response += "Transfer-Encoding: chunked\r\n";
         else
-        response += "Content-Length: " + std::to_string(resourceSize) + "\r\n";
+            response += "Content-Length: " + std::to_string(resourceSize) + "\r\n";
 
 
         if (headerFields.count("connection") and headerFields["connection"] != "Keep-Alive")

@@ -1,21 +1,23 @@
 # ifndef CLIENT_HPP
 # define CLIENT_HPP
-# include "Location.hpp"
-# include "string.hpp"
 # include "fileSystemUtils.hpp"
 # include "autoindex.hpp"
+# include "Location.hpp"
+# include "string.hpp"
 # include "Server.hpp"
-# include <sys/socket.h>
-# include <unistd.h>
-# include <fstream>
-# include <list>
-# include <fcntl.h>
-# include <dirent.h>
-# include <sstream>
-# include <cstdio>
-# include <string>
 # include <iostream>
+# include <fstream>
+# include <sstream>
+# include <string>
+# include <list>
+# include <cstdio>
 # include <ctime>
+# include <dirent.h>
+# include <unistd.h>
+# include <fcntl.h>
+# include <sys/socket.h>
+# include <sys/types.h>
+# include <sys/wait.h>
 
 # define MAX 2048
 # define CHUNK_SIZE 2048
@@ -32,7 +34,6 @@ void            InitstatusCodesage();
 void            mimeTypesInitializer();
 bool            hasSlash(const std::string &resource);
 bool            hasIndex(const std::string &index);
-void            runCGI();
 
 class Server;
 class ContextManager;
@@ -40,6 +41,7 @@ class ContextManager;
 class Client
 {
     private:
+        pid_t                               childPID;
         int                                 clSocket;
         int                                 phase;
         int                                 Rfd;
@@ -113,6 +115,8 @@ class Client
         void                redirect(int statusCode);
         void                setHeader(int error_status);
         void                runCGI();
+        void                writeInCGI();
+        void                CGIHeaders();
 
 
         /*                              setters                                         */

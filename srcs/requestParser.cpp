@@ -76,7 +76,7 @@ void Client::parse()
     {
         std::string &str = *it;
 
-        if (str == "")
+        if (str.empty())
         {
             if (methodType == "GET")
                 this->serve = &Client::GetHandler;
@@ -87,7 +87,7 @@ void Client::parse()
 
             return ;
         }
-        if (this->methodType == "") 
+        if (this->methodType.empty()) 
         {
             int errorCode = 0;
 
