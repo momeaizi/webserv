@@ -183,7 +183,6 @@ void Client::GetFromFile()
     this->response += std::string(buff, bytesRead);
 }
 
-
 void    Client::drop()
 {
     clear();

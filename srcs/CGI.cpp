@@ -61,22 +61,13 @@ void Client::runCGI()
 
 void Client::CGIHeaders()
 {
-    // std::list<std::string>              lines;
-    // std::list<std::string>::iterator    it;
+    // char    buff[BUFFER_SIZE];
+    // int  len = read(Rfd, buff, CHUNK_SIZE);
 
-    // lines = getlines(this->buffer);
-    // if (resourceSize > CHUNK_SIZE)
-    //     response += "Transfer-Encoding: chunked\r\n";
-    // for (it = lines.begin(); it != lines.end(); it++)
+    // if (len <= 0)
     // {
-    //     std::string &str = *it;
-
-    //     if (str.empty())
-    //     {
-    //         response += "\r\n";
-    //         serve = &Client::GetFromFile;
-    //         return ;
-    //     }
-    //     response += str + "\r\n";
+    //     phase = -1;
+    //     return ;
     // }
+    // this->response += std::string(buff, len);
 }
