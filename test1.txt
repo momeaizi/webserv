@@ -1,0 +1,17 @@
+
+<p>
+Hello visitor, you have seen this page 1 times.
+</p>
+
+<p>
+To continue, <a href="nextpage.php?">click
+here</a>.
+</p>
+<p>
+Hello visitor, you have seen this page 1 times.
+</p>
+
+<p>
+To continue, <a href="nextpage.php?">click
+here</a>.
+</p>

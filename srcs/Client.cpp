@@ -75,20 +75,6 @@ void    Client::redirect(int statusCode)
 }
 
 
-void    Client::writeInCGI()
-{
-    int     status;
-
-    upload();
-    waitpid(childPID, &status, 0);
-    if (WIFEXITED(status))
-    {
-        int exitStatus = WEXITSTATUS(status);
-
-        response = "HTTP/1.1 " + std::to_string(exitStatus) + " " + statusCodes[exitStatus] + "\r\n"; // change exitSatus by the satus header
-        serve = &Client::CGIHeaders;
-    }
-}
 
 void Client::setHeader(int statusCode)
 {
