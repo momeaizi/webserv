@@ -188,7 +188,6 @@ void Client::GetFromFile()
     this->response += std::string(buff, len);
 }
 
-
 void    Client::drop()
 {
     clear();
