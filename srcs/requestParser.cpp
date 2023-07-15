@@ -102,7 +102,7 @@ void Client::parse()
                 errorCode = 400;
 
             setQuerieString();
-            std::cout << "Q -> " << querieString << std::endl;
+
             std::pair<std::string, Location*> loc = server.getMatchedLocation(URI);
             this->location = loc.second;
 

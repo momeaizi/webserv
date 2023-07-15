@@ -117,6 +117,7 @@ class Client
         void                runCGI();
         void                writeInCGI();
         void                CGIHeaders();
+        void                fillCgiEnv();
 
 
         /*                              setters                                         */
