@@ -38,19 +38,27 @@ char    **Client::CgiEnv()
 
 void Client::runCGI()
 {
-    std::string filename = "/tmp/" + initializeupload();
-    char        **env = CgiEnv();
-    std::cout << filename << std::endl;
-    
-    serve = &Client::writeInCGI;
+    int p[2];
 
-    int Rfd = open(filename.c_str(), O_RDWR);
+
+    if (pipe(p) < 0)
+    {
+        phase = -1;
+        return ;
+    }
+
+    cgi_fd = p[1];
+    uploadFd = p[0];
 
     childPID = fork();
     if (!childPID)
     {
-        dup2(Rfd, 0);
-        dup2(Rfd, 1);
+        dup2(uploadFd, 0);
+        dup2(cgi_fd, 1);
+
+        close(uploadFd);
+        close(cgi_fd);
+
 
 
         char    **argv = new char*[3];
@@ -63,40 +71,53 @@ void Client::runCGI()
         memcpy(argv[1], "/Users/momeaizi/goinfre/webserv/index.php", 41);
         argv[1][41] = '\0';
 
-        argv[1] = NULL;
+        argv[2] = NULL;
 
-        execve("/usr/bin/php", argv, env);
+        if (execve("/usr/bin/php", argv, NULL/*env*/) < 0)
+            std::cerr << "execve failed!" << std::endl;
+
         exit(1);
     }
     else if (childPID < 0)
-        std::cerr <<  "Fork failed!" << std::endl;;
-    writeInCGI();
+    {
+        std::cerr <<  "Fork failed!" << std::endl;
+        phase = -1;
+        return ;
+    }
+
+    serve = &Client::writeInCGI;
 }
 
 void    Client::writeInCGI()
 {
-    // int     status;
+    int     status;
 
-    // upload();
-    // waitpid(childPID, &status, 0);
-    // if (WIFEXITED(status))
-    // {
-    //     int exitStatus = WEXITSTATUS(status);
+    if (methodType == "POST")
+        upload();
 
-    //     response = "HTTP/1.1 " + std::to_string(exitStatus) + " " + statusCodes[exitStatus] + "\r\n"; // change exitSatus by the satus header
-    //     serve = &Client::CGIHeaders;
-    // }
+    waitpid(childPID, &status, WNOHANG);
+    if (WIFEXITED(status))
+    {
+        // int exitStatus = WEXITSTATUS(status);
+        int exitStatus = 200;
+
+        response = "HTTP/1.1 " + std::to_string(exitStatus) + " " + statusCodes[exitStatus] + "\r\n"; // change exitSatus by the satus header
+        serve = &Client::CGIHeaders;
+    }
 }
 
 void Client::CGIHeaders()
 {
-    // char    buff[BUFFER_SIZE];
-    // int  len = read(Rfd, buff, CHUNK_SIZE);
+    std::cout << "CGIHeaders ____"<< std::endl;
+    char    buff[CHUNK_SIZE];
+    int  bytesRead = read(cgi_fd, buff, CHUNK_SIZE);
 
-    // if (len <= 0)
-    // {
-    //     phase = -1;
-    //     return ;
-    // }
-    // this->response += std::string(buff, len);
+    std::cout << "111      " << bytesRead<< std::endl;
+    if (bytesRead <= 0)
+    {
+        phase = -1;
+        return ;
+    }
+    this->response += std::string(buff, bytesRead);
+    std::cout << this->response << std::endl;
 }

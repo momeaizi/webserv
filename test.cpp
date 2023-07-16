@@ -8,12 +8,14 @@
 
 int main()
 {
-    int in = open("test.txt", O_RDWR);
-    int out = open("test1.txt", O_RDWR);
+    int in = open("/Users/momeaizi/goinfre/upload/test.txt", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+    int out = open("/Users/momeaizi/goinfre/upload/test.txt", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+
 
 
     int     status;
     int childPID = fork();
+
 
     if (childPID < 0)
         std::cerr <<  "Fork failed!" << std::endl;
@@ -55,7 +57,7 @@ int main()
             std::cout << exitstatus << std::endl;
 
             char buff[10];
-            while (read(out, buff, 10))
+            while (read(out, buff, 10)> 0)
             {
                 std::cout << std::string(buff, 10);
             }

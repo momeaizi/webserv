@@ -14,6 +14,6 @@ Hello visitor, you have seen this page <?php echo $_SESSION['count']; ?> times.
 </p>
 
 <p>
-To continue, <a href="nextpage.php?<?php echo htmlspecialchars(SID); ?>">click
+To continue, <a href="player.html<?php echo htmlspecialchars(SID); ?>">click
 here</a>.
 </p>

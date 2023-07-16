@@ -141,17 +141,22 @@ bool hasIndex(const std::string &index)
 
 void Client::GetFromFile()
 {
-    char    buff[BUFFER_SIZE];
+    char    buff[CHUNK_SIZE];
 
-    if (!uploadFile.is_open())
-        this->uploadFile.open(resource.c_str(), std::ios::in | std::ios::binary);
+    if (uploadFd == -1)
+    {
+        uploadFd = open(resource.c_str(), O_RDONLY /*| O_BINARY*/);
+        if (uploadFd < 0)
+        {
+            phase = -1;
+            return ;
+        }
+    }
     else if (resourceSize > CHUNK_SIZE)
         response += "\r\n";
 
 
-    uploadFile.read(buff, CHUNK_SIZE);
-    std::streamsize bytesRead = uploadFile.gcount();
-
+    int bytesRead = read(uploadFd, buff, CHUNK_SIZE);
 
     if (bytesRead <= 0)
     {
@@ -183,9 +188,16 @@ void    Client::clear()
 
     bytesUploaded = 0;
     resourceSize = 0;
-    if (uploadFile.is_open())
-        uploadFile.close();
-    uploadFile.clear();
+    if (uploadFd != -1)
+    {
+        close(uploadFd);
+        uploadFd = -1;
+    }
+    if (cgi_fd != -1)
+    {
+        close(cgi_fd);
+        cgi_fd = -1;
+    }
     methodType.clear();
     URI.clear();
     resource.clear();

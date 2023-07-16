@@ -13,7 +13,7 @@
     function uploadFile() {
       var fileInput = document.getElementById('file-input');
       var file = fileInput.files[0];
-      var chunkSize = 1024 * 1024; // 1MB chunk size
+      var chunkSize = 1024 * 1024 * 4; // 4MB chunk size
 
       var start = 0;
       var end = Math.min(chunkSize, file.size);
