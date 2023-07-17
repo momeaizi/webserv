@@ -1,19 +1,19 @@
 <?php
-
+// Start the session
 session_start();
 
-if (empty($_SESSION['count'])) {
-   $_SESSION['count'] = 1;
-} else {
-   $_SESSION['count']++;
+// Create a cookie named "user" with the value "John Doe"
+setcookie("user", "John Doe", time() + (86400 * 30), "/");
+
+// Set a session variable
+$_SESSION["favorite_color"] = "blue";
+
+// Retrieve the value of the cookie "user"
+if(isset($_COOKIE["user"])) {
+  echo "Cookie 'user' is set!<br>";
+  echo "Value is: " . $_COOKIE["user"] . "<br>";
 }
+
+// Retrieve the value of the session variable "favorite_color"
+echo "My favorite color is " . $_SESSION["favorite_color"] . ".";
 ?>
-
-<p>
-Hello visitor, you have seen this page <?php echo $_SESSION['count']; ?> times.
-</p>
-
-<p>
-To continue, <a href="player.html<?php echo htmlspecialchars(SID); ?>">click
-here</a>.
-</p>

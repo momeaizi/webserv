@@ -5,7 +5,7 @@ extern std::map<std::string, std::string>  mimeTypes;
 
 void Client::PostHandler()
 {
-    if (location->getUpload() != "")
+    if (!location->getUpload().empty())
     {
         if (!ft::isPathExists(location->getUpload()))
             setHeader(404);

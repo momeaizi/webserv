@@ -38,21 +38,20 @@ char    **Client::CgiEnv()
 
 void Client::runCGI()
 {
-    int p[2];
+    char        **env = CgiEnv();
+    std::string filename = "/tmp/" + initializeupload();
 
 
-    if (pipe(p) < 0)
-    {
-        phase = -1;
-        return ;
-    }
 
-    cgi_fd = p[1];
-    uploadFd = p[0];
 
     childPID = fork();
     if (!childPID)
     {
+        uploadFd = open(std::string(filename + "_in").c_str(), O_RDWR | O_CREAT, 0777);
+        cgi_fd = open(std::string(filename + "out").c_str(), O_RDWR | O_CREAT, 0777);
+        if (cgi_fd < 0 || uploadFd < 0)
+            exit(4);
+
         dup2(uploadFd, 0);
         dup2(cgi_fd, 1);
 
@@ -73,7 +72,7 @@ void Client::runCGI()
 
         argv[2] = NULL;
 
-        if (execve("/usr/bin/php", argv, NULL/*env*/) < 0)
+        if (execve("/usr/bin/php", argv, env) < 0)
             std::cerr << "execve failed!" << std::endl;
 
         exit(1);
@@ -85,6 +84,13 @@ void Client::runCGI()
         return ;
     }
 
+    uploadFd = open(std::string(filename + "in").c_str(), O_RDWR | O_CREAT, 0777);
+    cgi_fd = open(std::string(filename + "out").c_str(), O_RDWR | O_CREAT, 0777);
+    if (cgi_fd < 0 || uploadFd < 0)
+    {
+        phase = -1;
+        return ;
+    }
     serve = &Client::writeInCGI;
 }
 
@@ -108,16 +114,13 @@ void    Client::writeInCGI()
 
 void Client::CGIHeaders()
 {
-    std::cout << "CGIHeaders ____"<< std::endl;
     char    buff[CHUNK_SIZE];
     int  bytesRead = read(cgi_fd, buff, CHUNK_SIZE);
 
-    std::cout << "111      " << bytesRead<< std::endl;
     if (bytesRead <= 0)
     {
         phase = -1;
         return ;
     }
     this->response += std::string(buff, bytesRead);
-    std::cout << this->response << std::endl;
 }
