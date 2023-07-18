@@ -40,7 +40,6 @@ void Client::runCGI()
 {
     std::string filename = "/tmp/" + initializeupload();
     char        **env = CgiEnv();
-    std::cout << filename << std::endl;
     
     serve = &Client::writeInCGI;
 
@@ -75,17 +74,17 @@ void Client::runCGI()
 
 void    Client::writeInCGI()
 {
-    // int     status;
+    int     status;
+    if (this->methodType == "POST")
+        upload();
+    waitpid(childPID, &status, WNOHANG);
+    if (WIFEXITED(status))
+    {
+        int exitStatus = WEXITSTATUS(status);
 
-    // upload();
-    // waitpid(childPID, &status, 0);
-    // if (WIFEXITED(status))
-    // {
-    //     int exitStatus = WEXITSTATUS(status);
-
-    //     response = "HTTP/1.1 " + std::to_string(exitStatus) + " " + statusCodes[exitStatus] + "\r\n"; // change exitSatus by the satus header
-    //     serve = &Client::CGIHeaders;
-    // }
+        response = "HTTP/1.1 " + std::to_string(exitStatus) + " " + statusCodes[exitStatus] + "\r\n"; // change exitSatus by the satus header
+        serve = &Client::CGIHeaders;
+    }
 }
 
 void Client::CGIHeaders()

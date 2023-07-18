@@ -13,6 +13,8 @@ int main()
 
 
     int     status;
+    if (method == "POST")
+        upload();
     int childPID = fork();
 
     if (childPID < 0)
@@ -33,7 +35,7 @@ int main()
         argv[0][3] = '\0';
 
         argv[1] = new char[42];
-        memcpy(argv[1], "/Users/momeaizi/goinfre/webserv/index.php", 41);
+        memcpy(argv[1], "/Users/mskerba/Desktop/webserv/index.php", 41);
         argv[1][41] = '\0';
 
         argv[2] = NULL;
@@ -44,6 +46,7 @@ int main()
         exit(1);
     }
     write(in, "tahameaizi", 10);
+    std::cout << "________________" << std::endl;
     while (1)
     { 
 

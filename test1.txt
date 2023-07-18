@@ -14,4 +14,16 @@ Hello visitor, you have seen this page 1 times.
 <p>
 To continue, <a href="nextpage.php?">click
 here</a>.
+</p>Could not open input file: /Users/momeaizi/goinfre/webserv/index.php
+Could not open input file: /Users/momeaizi/goinfre/webserv/index.php
+Could not open input file: /Users/momeaizi/goinfre/webserv/index.php
+Could not open input file: /Users/momeaizi/Desktop/webserv/index.php
+
+<p>
+Hello visitor, you have seen this page 1 times.
+</p>
+
+<p>
+To continue, <a href="nextpage.php?">click
+here</a>.
 </p>
