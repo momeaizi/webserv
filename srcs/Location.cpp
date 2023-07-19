@@ -110,8 +110,6 @@ const std::map<std::string, std::string>    &Location::getCgi() const
 
 const std::string   &Location::getCgiVal(std::string key)
 {
-	if (!cgi.count(key))
-		return "";
 	return cgi[key];
 }
 

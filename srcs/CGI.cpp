@@ -56,18 +56,22 @@ void Client::runCGI()
     char        **env = CgiEnv();
     size_t len = resource.find_last_of(".");
     std::string extention;
+    std::string __file;
 
     if (len != std::string::npos)
+    {
         extention = resource.substr(len + 1);
+        __file = location->getCgiVal(extention);
+        if (__file.empty()) return setHeader(400); //! change status code
+    }
     else
-        return setHeader(400); // ! change status code;
-
+          return setHeader(400); // ! change status code;
+  
     std::string filename = "/tmp/" + initializeupload();
 
     childPID = fork();
     if (!childPID)
     {
-        std::string __file = location->getCgiVal(extention);
         uploadFd = open(std::string(filename + "_in").c_str(), O_RDWR | O_CREAT, 0777);
         cgi_fd = open(std::string(filename + "out").c_str(), O_RDWR | O_CREAT, 0777);
         if (cgi_fd < 0 || uploadFd < 0)
@@ -77,7 +81,7 @@ void Client::runCGI()
         
         close(uploadFd);
         close(cgi_fd);
-        if (__file.empty()) return setHeader(400); //! change status code
+    
         if (execve(__file.data(), creatArgv(extention, resource), env) < 0)
             std::cerr << "execve failed!" << std::endl;
 
