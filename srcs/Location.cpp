@@ -108,6 +108,11 @@ const std::map<std::string, std::string>    &Location::getCgi() const
 	return cgi;
 }
 
+const std::string   &Location::getCgiVal(std::string key)
+{
+	return cgi[key];
+}
+
 const std::set<std::string>                 &Location::getAllowedMethods() const
 {
 	return allowedMethods;

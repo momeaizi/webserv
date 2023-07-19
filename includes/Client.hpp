@@ -51,7 +51,8 @@ class Client
         Server                              &server;
         size_t                              bytesUploaded;
         size_t                              resourceSize;
-        std::fstream                        uploadFile;
+        int                                 cgi_fd;
+        int                                 uploadFd;
         std::string                         methodType;
         std::string                         URI;
         std::string                         querieString;
@@ -69,7 +70,9 @@ class Client
     public:
         friend class ContextManager;
         Client(int clSocket, Server &server, const std::string &ipAddress) : 
-                clSocket(clSocket), phase(1), chunked(0), server(server), bytesUploaded(0), resourceSize(0), methodType(""), resource(""), ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)), serve(&Client::parse)
+                clSocket(clSocket), phase(1), chunked(0), server(server), bytesUploaded(0), 
+                resourceSize(0), cgi_fd(-1), uploadFd(-1), methodType(""), resource(""), ipAddress(ipAddress),
+                location(NULL), lastActivity(time(NULL)), serve(&Client::parse)
         {
             fcntl(clSocket, F_SETFL, O_NONBLOCK);
             int set = 1;
@@ -83,6 +86,7 @@ class Client
             bytesUploaded = cl.bytesUploaded;
             resourceSize = cl.resourceSize;
             methodType = cl.methodType;
+            uploadFd = cl.uploadFd;
             URI = cl.URI;
             buffer = cl.buffer;
             resource = cl.resource;

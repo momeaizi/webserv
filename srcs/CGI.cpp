@@ -35,52 +35,82 @@ char    **Client::CgiEnv()
     return env;
 }
 
+char    **creatArgv(std::string extention, std::string path)
+{
+        char    **argv = new char*[3];
+
+        argv[0] = new char[4];
+        memcpy(argv[0], extention.data(), 3);
+        argv[0][3] = '\0';
+
+        argv[1] = new char[42];
+        memcpy(argv[1], path.data(), 41);
+        argv[1][41] = '\0';
+
+        argv[2] = NULL;
+        return argv;
+}
 
 void Client::runCGI()
 {
-    std::string filename = "/tmp/" + initializeupload();
     char        **env = CgiEnv();
-    
-    serve = &Client::writeInCGI;
+    size_t len = resource.find_last_of(".");
+    std::string extention;
 
-    int Rfd = open(filename.c_str(), O_RDWR);
+    if (len != std::string::npos)
+        extention = resource.substr(len + 1);
+    else
+        return setHeader(400); // ! chage status code;
+
+    std::string filename = "/tmp/" + initializeupload();
 
     childPID = fork();
     if (!childPID)
     {
-        dup2(Rfd, 0);
-        dup2(Rfd, 1);
+        uploadFd = open(std::string(filename + "_in").c_str(), O_RDWR | O_CREAT, 0777);
+        cgi_fd = open(std::string(filename + "out").c_str(), O_RDWR | O_CREAT, 0777);
+        if (cgi_fd < 0 || uploadFd < 0)
+            exit(4);
+        dup2(uploadFd, 0);
+        dup2(cgi_fd, 1);
 
+        close(uploadFd);
+        close(cgi_fd);
 
-        char    **argv = new char*[3];
+        if (execve(location->getCgiVal(extention).data(), creatArgv(extention, resource), env) < 0)
+            std::cerr << "execve failed!" << std::endl;
 
-        argv[0] = new char[4];
-        memcpy(argv[0], "php", 3);
-        argv[0][3] = '\0';
-
-        argv[1] = new char[42];
-        memcpy(argv[1], "/Users/momeaizi/goinfre/webserv/index.php", 41);
-        argv[1][41] = '\0';
-
-        argv[1] = NULL;
-
-        execve("/usr/bin/php", argv, env);
         exit(1);
     }
     else if (childPID < 0)
-        std::cerr <<  "Fork failed!" << std::endl;;
-    writeInCGI();
+    {
+        std::cerr <<  "Fork failed!" << std::endl;
+        phase = -1;
+        return ;
+    }
+
+    uploadFd = open(std::string(filename + "in").c_str(), O_RDWR | O_CREAT, 0777);
+    cgi_fd = open(std::string(filename + "out").c_str(), O_RDWR | O_CREAT, 0777);
+    if (cgi_fd < 0 || uploadFd < 0)
+    {
+        phase = -1;
+        return ;
+    }
+    serve = &Client::writeInCGI;
 }
 
 void    Client::writeInCGI()
 {
     int     status;
-    if (this->methodType == "POST")
+
+    if (methodType == "POST")
         upload();
+
     waitpid(childPID, &status, WNOHANG);
     if (WIFEXITED(status))
     {
-        int exitStatus = WEXITSTATUS(status);
+        // int exitStatus = WEXITSTATUS(status);
+        int exitStatus = 200;
 
         response = "HTTP/1.1 " + std::to_string(exitStatus) + " " + statusCodes[exitStatus] + "\r\n"; // change exitSatus by the satus header
         serve = &Client::CGIHeaders;
@@ -89,13 +119,13 @@ void    Client::writeInCGI()
 
 void Client::CGIHeaders()
 {
-    // char    buff[BUFFER_SIZE];
-    // int  len = read(Rfd, buff, CHUNK_SIZE);
+    char    buff[CHUNK_SIZE];
+    int  bytesRead = read(cgi_fd, buff, CHUNK_SIZE);
 
-    // if (len <= 0)
-    // {
-    //     phase = -1;
-    //     return ;
-    // }
-    // this->response += std::string(buff, len);
+    if (bytesRead <= 0)
+    {
+        phase = -1;
+        return ;
+    }
+    this->response += std::string(buff, bytesRead);
 }

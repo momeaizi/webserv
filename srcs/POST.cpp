@@ -5,7 +5,7 @@ extern std::map<std::string, std::string>  mimeTypes;
 
 void Client::PostHandler()
 {
-    if (location->getUpload() != "")
+    if (!location->getUpload().empty())
     {
         if (!ft::isPathExists(location->getUpload()))
             setHeader(404);
@@ -50,8 +50,15 @@ void Client::upload()
     {
         chunked = 0;
         std::string extention = initializeupload() + mimeTypes[this->headerFields["content-type"]];
-        if (!uploadFile.is_open()) // if is already opened in CGi
-            this->uploadFile.open(this->location->getUpload() + "/" + extention, std::ios::out | std::ios::binary);
+        if (uploadFd == -1) // if is already opened in CGi
+        {
+            uploadFd = open(std::string(this->location->getUpload() + "/" + extention).c_str(), O_RDWR  | O_CREAT/*| O_BINARY*/ ,0660);
+            if (uploadFd < 0)
+            {
+                phase = -1;
+                return ;
+            }
+        }
     }
     if (this->headerFields["transfer-encoding"] == "chunked")
         return chunkedUpload();
@@ -71,11 +78,14 @@ void Client::upload()
     }
     if (server.getClientMaxBodySize() != -1 && ContentLength > max_body_size)
     {
+        close(uploadFd);
+        uploadFd = -1;
         return setHeader(413);
     }
     if (bytesUploaded == ContentLength)
     {
-        this->uploadFile.close();
+        close(uploadFd);
+        uploadFd = -1;
         if (serve != &Client::writeInCGI)
             setHeader(201);
         return ;
@@ -85,7 +95,9 @@ void Client::upload()
     else
         str = buffer.substr(0, ContentLength - bytesUploaded);
 
-    uploadFile.write(str.data(), str.length());
+    if (write(uploadFd, str.data(), str.length()) <= 0)
+        phase = -1;
+
     buffer = buffer.substr(str.length());
     this->bytesUploaded += str.length();
 }
@@ -102,15 +114,20 @@ void    Client::boundaryUpload()
     {
         if(buffer.substr(0, boundary.size() + 2) == boundary + "--")
         {
-            uploadFile.close();
+            close(uploadFd);
+            uploadFd = -1;
             setHeader(201);
             return ;
         }
-        if (uploadFile.is_open())
-            uploadFile.close();
+        if (uploadFd != -1)
+        {
+            close(uploadFd);
+            uploadFd = -1;
+        }
         std::list<std::string> lines = getlines(buffer);
         std::list<std::string>::iterator it;
         std::string name;
+
         for (it = lines.begin(); it != lines.end(); it++)
         {
             str = *it;
@@ -127,8 +144,14 @@ void    Client::boundaryUpload()
             }
         }
         loc = name.find("\"");
-        this->uploadFile.open(this->location->getUpload() + "/" + name.substr(0, loc), std::ios::out | std::ios::binary);
+        uploadFd = open(std::string(this->location->getUpload() + "/" + name.substr(0, loc)).c_str(), O_WRONLY | O_CREAT , 0660);
+        if (uploadFd < 0)
+        {
+            phase = -1;
+            return ;
+        }
     }
+
     loc = buffer.find("\r\n" + boundary);
     if (loc == std::string::npos)
     {
@@ -140,7 +163,8 @@ void    Client::boundaryUpload()
         str = buffer.substr(0, loc);
         loc = 2;
     }
-    uploadFile.write(str.data(), str.length());
+    if (write(uploadFd, str.data(), str.length()) < 0)
+        phase = -1;
     buffer = buffer.substr(str.size() + loc);
     this->bytesUploaded += str.size();
 }
@@ -179,7 +203,8 @@ void Client::chunkedUpload()
                 }
                 if(!chunked)
                 {
-                    this->uploadFile.close();
+                    close(uploadFd);
+                    uploadFd = -1;
                     if (serve != &Client::writeInCGI)
                         setHeader(201);
                     return ;
@@ -193,7 +218,8 @@ void Client::chunkedUpload()
             str = this->buffer.substr(0, buffer.size());
         else
             str = this->buffer.substr(0, this->chunked);
-        uploadFile << str;
+        if (write(uploadFd, str.data(), str.length()) < 0)
+            phase = -1;
         loc = str.size();
         if (buffer.size() > this->chunked) loc += 2;
         if (buffer.size() < loc) loc = buffer.size();
@@ -215,5 +241,7 @@ std::string  Client::initializeupload()
     FileName += std::to_string(gmtm->tm_hour + 5) + "_";
     FileName += std::to_string(gmtm->tm_min + 30) + "_";
     FileName += std::to_string(gmtm->tm_sec);
+	srand((unsigned) time(NULL));
+    FileName += std::to_string(rand());
     return FileName;
 }
