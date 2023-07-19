@@ -1,7 +1,9 @@
 # ifndef CLIENT_HPP
 # define CLIENT_HPP
+
+
+
 # include "fileSystemUtils.hpp"
-# include "autoindex.hpp"
 # include "Location.hpp"
 # include "string.hpp"
 # include "Server.hpp"
@@ -27,16 +29,18 @@
 extern fd_set  readMaster;
 extern fd_set  writeMaster;
 extern int     maxFds;
-
 extern std::map<int, std::string>          statusCodes;
 extern std::map<std::string, std::string>  mimeTypes;
 
+
 std::string     trimString(const std::string &str);
 int             deleteDir(const char* path);
-void            InitstatusCodesage();
-void            mimeTypesInitializer();
+void            InitReasonPhrase();
+void            InitMimeTypes();
 bool            hasSlash(const std::string &resource);
 bool            hasIndex(const std::string &index);
+void            StringOfCurrentContent(const std::string &path, const std::string &filename, const std::string &uri);
+
 
 class Server;
 class ContextManager;
@@ -46,7 +50,6 @@ class Client
     private:
         pid_t                               childPID;
         int                                 clSocket;
-        int                                 phase;
         size_t                              chunked;
         Server                              &server;
         size_t                              bytesUploaded;
@@ -69,73 +72,33 @@ class Client
 
     public:
         friend class ContextManager;
-        Client(int clSocket, Server &server, const std::string &ipAddress) : 
-                clSocket(clSocket), phase(1), chunked(0), server(server), bytesUploaded(0), 
-                resourceSize(0), cgi_fd(-1), uploadFd(-1), methodType(""), resource(""), ipAddress(ipAddress),
-                location(NULL), lastActivity(time(NULL)), serve(&Client::parse)
-        {
-            fcntl(clSocket, F_SETFL, O_NONBLOCK);
-            int set = 1;
-            setsockopt(clSocket, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int)); 
-        }
 
-        Client  &operator= (const Client &cl)
-        {
-            clSocket = cl.clSocket;
-            phase = cl.phase;
-            bytesUploaded = cl.bytesUploaded;
-            resourceSize = cl.resourceSize;
-            methodType = cl.methodType;
-            uploadFd = cl.uploadFd;
-            URI = cl.URI;
-            buffer = cl.buffer;
-            resource = cl.resource;
-            headerFields = cl.headerFields;
-            location = cl.location;
-            ipAddress = cl.ipAddress;
-            lastActivity = time(NULL);
-            serve = cl.serve;
-        
-            return *this;
-        }
 
-        Client(const Client &cl) : server(cl.server)
-        {
-            *this = cl;
-        }
+        Client(int clSocket, Server &server, const std::string &ipAddress);
+        Client  &operator= (const Client &cl);
+        Client(const Client &cl) : server(cl.server) { *this = cl; }
 
-        ~Client() {};
         void                parse();
         void                setQuerieString();
         void                upload();
         void                chunkedUpload();
         void                boundaryUpload();
-        void                GetFromFile();
+        void                serveStaticFIle();
         void                PostHandler();
         void                DeleteHandler();
         void                GetHandler();
-        std::string         initializeupload();
+        std::string         generateFileNameFromDate();
         void                drop();
         void                clear();
         void                redirect(int statusCode);
         void                setHeader(int error_status);
-        void                runCGI();
-        void                writeInCGI();
-        void                CGIHeaders();
-        char                **CgiEnv();
+        void                serveCGI();
+        void                passRequestBodyAndWait();
+        void                receiveCGIOuput();
+        char                **fillCgiEnvVars();
 
-
-        /*                              setters                                         */
-        // void    setResource();
-        // void    setLocation();
-        // void    setIpAddress();
-
-        /*                              getters                                         */
 
         int                 getClSocket() {return clSocket; }
-        int                 getPhase() {return phase; }
-        const std::string   &getResource() {return resource; }
-        const std::string   &getIpAddress() { return ipAddress; }
 };
 
 

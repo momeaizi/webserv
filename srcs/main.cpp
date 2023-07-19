@@ -15,14 +15,14 @@ std::map<std::string, std::string>  mimeTypes;
 
 int main()
 {
-    InitstatusCodesage();
+    InitReasonPhrase();
 
     try
     {
-        mimeTypesInitializer();
+        InitMimeTypes();
         ContextManager  http;
 
-        if (!http.servers.size())
+        if (!http.getServers().size())
             return 1;
 
         http.openAndListen();

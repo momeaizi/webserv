@@ -1,7 +1,7 @@
 # include "../includes/Client.hpp"
 # include <string.h>
 
-char    **Client::CgiEnv()
+char    **Client::fillCgiEnvVars()
 {
     std::set<std::string>   cgi_env;
 
@@ -51,9 +51,9 @@ char    **creatArgv(std::string extention, std::string path)
         return argv;
 }
 
-void Client::runCGI()
+void Client::serveCGI()
 {
-    char        **env = CgiEnv();
+    char        **env = fillCgiEnvVars();
     size_t len = resource.find_last_of(".");
     std::string extention;
     std::string __file;
@@ -65,15 +65,18 @@ void Client::runCGI()
         if (__file.empty()) return setHeader(400); //! change status code
     }
     else
-          return setHeader(400); // ! change status code;
-  
-    std::string filename = "/tmp/" + initializeupload();
+        return setHeader(200);
+
+    std::string filename = "/tmp/" + generateFileNameFromDate();
 
     childPID = fork();
     if (!childPID)
     {
+        std::string __file = location->getCgiVal(extention);
+
         uploadFd = open(std::string(filename + "_in").c_str(), O_RDWR | O_CREAT, 0777);
         cgi_fd = open(std::string(filename + "out").c_str(), O_RDWR | O_CREAT, 0777);
+
         if (cgi_fd < 0 || uploadFd < 0)
             exit(4);
         dup2(uploadFd, 0);
@@ -81,7 +84,8 @@ void Client::runCGI()
         
         close(uploadFd);
         close(cgi_fd);
-    
+
+        if (__file.empty()) return setHeader(400); //! change status code
         if (execve(__file.data(), creatArgv(extention, resource), env) < 0)
             std::cerr << "execve failed!" << std::endl;
 
@@ -90,7 +94,7 @@ void Client::runCGI()
     else if (childPID < 0)
     {
         std::cerr <<  "Fork failed!" << std::endl;
-        phase = -1;
+        serve = NULL;
         return ;
     }
 
@@ -98,13 +102,13 @@ void Client::runCGI()
     cgi_fd = open(std::string(filename + "out").c_str(), O_RDWR | O_CREAT, 0777);
     if (cgi_fd < 0 || uploadFd < 0)
     {
-        phase = -1;
+        serve = NULL;
         return ;
     }
-    serve = &Client::writeInCGI;
+    serve = &Client::passRequestBodyAndWait;
 }
 
-void    Client::writeInCGI()
+void    Client::passRequestBodyAndWait()
 {
     int     status;
 
@@ -118,18 +122,18 @@ void    Client::writeInCGI()
         int exitStatus = 200;
 
         response = "HTTP/1.1 " + std::to_string(exitStatus) + " " + statusCodes[exitStatus] + "\r\n"; // change exitSatus by the satus header
-        serve = &Client::CGIHeaders;
+        serve = &Client::receiveCGIOuput;
     }
 }
 
-void Client::CGIHeaders()
+void Client::receiveCGIOuput()
 {
     char    buff[CHUNK_SIZE];
     int  bytesRead = read(cgi_fd, buff, CHUNK_SIZE);
 
     if (bytesRead <= 0)
     {
-        phase = -1;
+        serve = NULL;
         return ;
     }
     this->response += std::string(buff, bytesRead);

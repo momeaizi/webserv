@@ -38,7 +38,7 @@ void Client::PostHandler()
     if (!location->locationHasCgi())
         setHeader(403);
     else
-        runCGI();
+        serveCGI();
 }
 
 void Client::upload() 
@@ -49,13 +49,13 @@ void Client::upload()
     if (!this->bytesUploaded)
     {
         chunked = 0;
-        std::string extention = initializeupload() + mimeTypes[this->headerFields["content-type"]];
+        std::string extention = generateFileNameFromDate() + mimeTypes[this->headerFields["content-type"]];
         if (uploadFd == -1) // if is already opened in CGi
         {
             uploadFd = open(std::string(this->location->getUpload() + "/" + extention).c_str(), O_RDWR  | O_CREAT/*| O_BINARY*/ ,0660);
             if (uploadFd < 0)
             {
-                phase = -1;
+                serve = NULL;
                 return ;
             }
         }
@@ -73,7 +73,7 @@ void Client::upload()
     }
     catch (...)
     {
-        phase = -1;
+        serve = NULL;
         return ;
     }
     if (server.getClientMaxBodySize() != -1 && ContentLength > max_body_size)
@@ -86,7 +86,7 @@ void Client::upload()
     {
         close(uploadFd);
         uploadFd = -1;
-        if (serve != &Client::writeInCGI)
+        if (serve != &Client::passRequestBodyAndWait)
             setHeader(201);
         return ;
     }
@@ -96,7 +96,7 @@ void Client::upload()
         str = buffer.substr(0, ContentLength - bytesUploaded);
 
     if (write(uploadFd, str.data(), str.length()) <= 0)
-        phase = -1;
+        serve = NULL;
 
     buffer = buffer.substr(str.length());
     this->bytesUploaded += str.length();
@@ -147,7 +147,7 @@ void    Client::boundaryUpload()
         uploadFd = open(std::string(this->location->getUpload() + "/" + name.substr(0, loc)).c_str(), O_WRONLY | O_CREAT , 0660);
         if (uploadFd < 0)
         {
-            phase = -1;
+            serve = NULL;
             return ;
         }
     }
@@ -164,7 +164,7 @@ void    Client::boundaryUpload()
         loc = 2;
     }
     if (write(uploadFd, str.data(), str.length()) < 0)
-        phase = -1;
+        serve = NULL;
     buffer = buffer.substr(str.size() + loc);
     this->bytesUploaded += str.size();
 }
@@ -192,7 +192,7 @@ void Client::chunkedUpload()
                 }
                 catch (...)
                 {
-                    phase = -1;
+                    serve = NULL;
                     return ;
                 }
                 this->buffer = this->buffer.substr(loc + 2);
@@ -205,7 +205,7 @@ void Client::chunkedUpload()
                 {
                     close(uploadFd);
                     uploadFd = -1;
-                    if (serve != &Client::writeInCGI)
+                    if (serve != &Client::passRequestBodyAndWait)
                         setHeader(201);
                     return ;
                 }
@@ -219,7 +219,7 @@ void Client::chunkedUpload()
         else
             str = this->buffer.substr(0, this->chunked);
         if (write(uploadFd, str.data(), str.length()) < 0)
-            phase = -1;
+            serve = NULL;
         loc = str.size();
         if (buffer.size() > this->chunked) loc += 2;
         if (buffer.size() < loc) loc = buffer.size();
@@ -229,19 +229,20 @@ void Client::chunkedUpload()
     }
 }
 
-std::string  Client::initializeupload()
+std::string  Client::generateFileNameFromDate()
 {
-    std::string FileName;
+    std::string date;
 
     time_t now = time(NULL);
     tm *gmtm = gmtime(&now);
-    FileName  = std::to_string(gmtm->tm_mday) + "_";
-    FileName += std::to_string(gmtm->tm_mon + 1) + "_";
-    FileName += std::to_string(1900 + gmtm->tm_year) + "_";
-    FileName += std::to_string(gmtm->tm_hour + 5) + "_";
-    FileName += std::to_string(gmtm->tm_min + 30) + "_";
-    FileName += std::to_string(gmtm->tm_sec);
+    date  = std::to_string(gmtm->tm_mday) + "_";
+    date += std::to_string(gmtm->tm_mon + 1) + "_";
+    date += std::to_string(1900 + gmtm->tm_year) + "_";
+    date += std::to_string(gmtm->tm_hour + 5) + "_";
+    date += std::to_string(gmtm->tm_min + 30) + "_";
+    date += std::to_string(gmtm->tm_sec) + "_";
 	srand((unsigned) time(NULL));
-    FileName += std::to_string(rand());
-    return FileName;
+    date += std::to_string(rand());
+
+    return date;
 }

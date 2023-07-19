@@ -1,5 +1,4 @@
-# include "../includes/autoindex.hpp"
-# include <sys/stat.h>
+# include "../includes/Client.hpp"
 
 
 std::vector<std::string>  listOfCurrentContent(std::string path)

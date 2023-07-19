@@ -21,7 +21,7 @@ void    Client::GetHandler()
         {
             if (location->getAutoindex())
             {
-                std::string name = "/tmp/" + initializeupload() + ".html";
+                std::string name = "/tmp/" + generateFileNameFromDate() + ".html";
                 StringOfCurrentContent(resource, name, URI);
                 resource = name;
                 setHeader(200);
@@ -35,5 +35,5 @@ void    Client::GetHandler()
     if (!location->locationHasCgi())
         setHeader(200);
     else
-        runCGI();
+        serveCGI();
 }
