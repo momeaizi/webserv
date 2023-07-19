@@ -4,7 +4,7 @@
 
 
 
-void    InitstatusCodesage()
+void    InitReasonPhrase()
 {
     statusCodes[100] = "Continue";
     statusCodes[101] = "Switching Protocols";
@@ -25,7 +25,7 @@ void    InitstatusCodesage()
     statusCodes[505] = "HTTP Version Not Supported";
 }
 
-void    mimeTypesInitializer()
+void    InitMimeTypes()
 {
     std::ifstream mimeFile("mime.types");
     std::string   line;
@@ -117,10 +117,10 @@ void Client::setHeader(int statusCode)
         if (statusCode >= 301 && statusCode <= 302)
             redirect(statusCode);
 
-        serve = &Client::GetFromFile;
+        serve = &Client::serveStaticFIle;
     }
     else
-        phase = -1;
+        serve = NULL;
     response += "\r\n";
 
 }
@@ -139,7 +139,7 @@ bool hasIndex(const std::string &index)
     return !index.empty();
 }
 
-void Client::GetFromFile()
+void Client::serveStaticFIle()
 {
     char    buff[CHUNK_SIZE];
 
@@ -148,7 +148,7 @@ void Client::GetFromFile()
         uploadFd = open(resource.c_str(), O_RDONLY /*| O_BINARY*/);
         if (uploadFd < 0)
         {
-            phase = -1;
+            serve = NULL;
             return ;
         }
     }
@@ -162,7 +162,7 @@ void Client::GetFromFile()
     {
         if (resourceSize > CHUNK_SIZE)
             this->response += "0\r\n\r\n";
-        phase = -1;
+        serve = NULL;
         return ;
     }
     if (resourceSize > CHUNK_SIZE)
@@ -184,8 +184,6 @@ void    Client::drop()
 
 void    Client::clear()
 {
-    phase = 0;
-
     bytesUploaded = 0;
     resourceSize = 0;
     if (uploadFd != -1)
@@ -204,4 +202,35 @@ void    Client::clear()
     headerFields.clear();
     location = NULL;
     serve = &Client::parse;
+}
+
+
+Client::Client(int clSocket, Server &server, const std::string &ipAddress) : 
+                clSocket(clSocket),  chunked(0), server(server), bytesUploaded(0), 
+                    resourceSize(0), cgi_fd(-1), uploadFd(-1), methodType(""), resource(""),
+                        ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)), serve(&Client::parse)
+{
+    fcntl(clSocket, F_SETFL, O_NONBLOCK);
+    int set = 1;
+    setsockopt(clSocket, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int)); 
+}
+
+
+Client  &Client::operator= (const Client &cl)
+{
+    clSocket = cl.clSocket;
+    bytesUploaded = cl.bytesUploaded;
+    resourceSize = cl.resourceSize;
+    methodType = cl.methodType;
+    uploadFd = cl.uploadFd;
+    URI = cl.URI;
+    buffer = cl.buffer;
+    resource = cl.resource;
+    headerFields = cl.headerFields;
+    location = cl.location;
+    ipAddress = cl.ipAddress;
+    lastActivity = time(NULL);
+    serve = cl.serve;
+
+    return *this;
 }

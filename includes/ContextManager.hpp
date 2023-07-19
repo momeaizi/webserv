@@ -23,14 +23,17 @@ extern int     maxFds;
 
 class   ContextManager
 {
-    public:
+    private:
         char	                            buffer[1024];
         std::vector<Server>                 servers;
         std::list<Client>                   clients;
 
+    public:
+
         ContextManager();
         void    openAndListen();
         void    ioMultiplexer();
+        const std::vector<Server>   &getServers() { return servers; }
 
 };
 

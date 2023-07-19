@@ -14,14 +14,10 @@ ContextManager::ContextManager()
 void    ContextManager::openAndListen()
 {
 	for (size_t i = 0 ; i < servers.size(); ++i)
-	{
 		servers[i].openSocket();
-	}
 
 	for (size_t i = 0 ; i < servers.size(); ++i)
-	{
 		servers[i].startListening();
-	}
 }
 
 
@@ -86,7 +82,7 @@ void    ContextManager::ioMultiplexer()
 				
 			}
 
-			if (client.getPhase() == -1 || time(NULL) - client.lastActivity > TIMEOUT)
+			if (!client.serve || time(NULL) - client.lastActivity > TIMEOUT)
 			{
 				if (client.headerFields.count("connection") and client.headerFields["connection"] == "Keep-Alive")
 					client.clear();
