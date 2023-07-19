@@ -35,44 +35,53 @@ char    **Client::fillCgiEnvVars()
     return env;
 }
 
+char    **creatArgv(std::string extention, std::string path)
+{
+        char    **argv = new char*[3];
+
+        argv[0] = new char[4];
+        memcpy(argv[0], extention.data(), 3);
+        argv[0][3] = '\0';
+
+        argv[1] = new char[42];
+        memcpy(argv[1], path.data(), 41);
+        argv[1][41] = '\0';
+
+        argv[2] = NULL;
+        return argv;
+}
 
 void Client::serveCGI()
 {
     char        **env = fillCgiEnvVars();
+    size_t len = resource.find_last_of(".");
+    std::string extention;
+
+    if (len != std::string::npos)
+        extention = resource.substr(len + 1);
+    else
+        return setHeader(200);
+
     std::string filename = "/tmp/" + generateFileNameFromDate();
-
-
-
 
     childPID = fork();
     if (!childPID)
     {
+        std::string __file = location->getCgiVal(extention);
+
         uploadFd = open(std::string(filename + "_in").c_str(), O_RDWR | O_CREAT, 0777);
         cgi_fd = open(std::string(filename + "out").c_str(), O_RDWR | O_CREAT, 0777);
+
         if (cgi_fd < 0 || uploadFd < 0)
             exit(4);
-
         dup2(uploadFd, 0);
         dup2(cgi_fd, 1);
-
+        
         close(uploadFd);
         close(cgi_fd);
 
-
-
-        char    **argv = new char*[3];
-
-        argv[0] = new char[4];
-        memcpy(argv[0], "php", 3);
-        argv[0][3] = '\0';
-
-        argv[1] = new char[42];
-        memcpy(argv[1], "/Users/momeaizi/goinfre/webserv/index.php", 41);
-        argv[1][41] = '\0';
-
-        argv[2] = NULL;
-
-        if (execve("/usr/bin/php", argv, env) < 0)
+        if (__file.empty()) return setHeader(400); //! change status code
+        if (execve(__file.data(), creatArgv(extention, resource), env) < 0)
             std::cerr << "execve failed!" << std::endl;
 
         exit(1);

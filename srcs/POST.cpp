@@ -240,7 +240,9 @@ std::string  Client::generateFileNameFromDate()
     date += std::to_string(1900 + gmtm->tm_year) + "_";
     date += std::to_string(gmtm->tm_hour + 5) + "_";
     date += std::to_string(gmtm->tm_min + 30) + "_";
-    date += std::to_string(gmtm->tm_sec);
+    date += std::to_string(gmtm->tm_sec) + "_";
+	srand((unsigned) time(NULL));
+    date += std::to_string(rand());
 
     return date;
 }
