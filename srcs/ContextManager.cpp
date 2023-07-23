@@ -51,6 +51,7 @@ void    ContextManager::ioMultiplexer()
 		{
 			Client	&client = *it;
 
+
 			(client.*client.serve)();
 			if (FD_ISSET(client.getClSocket(), &reads))
 			{
@@ -58,6 +59,8 @@ void    ContextManager::ioMultiplexer()
 				bytes = recv(client.getClSocket(), buffer, 1024, 0);
 				if (bytes <= 0)
 				{
+					if (client.methodType == "POST")
+            			remove(client.uploadFileName.c_str());
 					DROPCLIENT;
 				}
 

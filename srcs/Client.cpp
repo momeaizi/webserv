@@ -188,8 +188,6 @@ void    Client::clear()
     resourceSize = 0;
     if (uploadFd != -1)
     {
-        if (methodType == "POST" && bytesUploaded != resourceSize)
-            remove(uploadFileName.c_str());
         close(uploadFd);
         uploadFd = -1;
     }
