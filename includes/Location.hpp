@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <set>
+#include <stdlib.h>
 #include "string.hpp"
 
 

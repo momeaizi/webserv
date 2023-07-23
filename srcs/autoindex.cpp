@@ -7,7 +7,7 @@ std::vector<std::string>  listOfCurrentContent(std::string path)
     dirent  *entry;
     std::vector<std::string> currentContent;
 
-    while ((entry = readdir(dir)) != nullptr)
+    while ((entry = readdir(dir)) != NULL)
     {
         std::string filepath(path + "/" + std::string(entry->d_name));
 
@@ -23,7 +23,7 @@ void StringOfCurrentContent(const std::string &path, const std::string &filename
 {
     std::string response = "<!DOCTYPE html><html><body><h1>Index of " + uri + "</h1> <hr><ul>";
     std::vector<std::string> currentContent = listOfCurrentContent(path);
-    std::ofstream HTMLFILE(filename);
+    std::ofstream HTMLFILE(filename.c_str());
 
     HTMLFILE << response;
     for(size_t i = 0; i < currentContent.size(); i++)

@@ -35,7 +35,7 @@ void	ConfigParser::getLine()
 int	ConfigParser::parseLocation(Location &location)
 {
 	if (tokens.size() != 2)
-		throw "invalid number of arguments in \"location\" directive in serv.conf:" + std::to_string(lineNumber);
+		throw "invalid number of arguments in \"location\" directive in serv.conf:" + to_string(lineNumber);
 
 	while (!configFIle.eof())
 	{
@@ -80,7 +80,7 @@ void	ConfigParser::addServer()
 	servers.back().attributeExaminer();
 
 	if (ports.count(servers.back().getPort()))
-		throw "port already in use in serv.conf:" + std::to_string(lineNumber);
+		throw "port already in use in serv.conf:" + to_string(lineNumber);
 
 	ports.insert(servers.back().getPort());
 
@@ -98,7 +98,7 @@ int	 ConfigParser::parseServer()
 
 
 	if (!servers.size())
-		throw "unknown directive in serv.conf:" + std::to_string(lineNumber);
+		throw "unknown directive in serv.conf:" + to_string(lineNumber);
 	else if (tokens[0] == "\tlocation")
 	{
 		if (!parseLocation(servers.back().locations[tokens[1]]))
@@ -117,7 +117,7 @@ int	 ConfigParser::parseServer()
 	else if (tokens[0] == "\terror_page")
 		servers.back().setErrorPages(tokens, lineNumber);
 	else
-		throw "unknown directive in serv.conf:" + std::to_string(lineNumber);
+		throw "unknown directive in serv.conf:" + to_string(lineNumber);
 
 
 	return 1;

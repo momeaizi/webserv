@@ -22,7 +22,7 @@ int deleteDir(const char* path)
     DIR* dir = opendir(path);
 
     dirent* entry;
-    while ((entry = readdir(dir)) != nullptr)
+    while ((entry = readdir(dir)) != NULL)
     {
         const char* filename = entry->d_name;
         std::string strfile = std::string(filename);

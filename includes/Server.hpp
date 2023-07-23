@@ -10,6 +10,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <ctype.h>
+#include <cstring>
+#include <stdlib.h>
 
 
 #include <iostream>

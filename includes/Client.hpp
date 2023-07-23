@@ -62,6 +62,7 @@ class Client
         std::string                         buffer;
         std::string                         response;
         std::string                         resource;
+        std::string                         uploadFileName;
         std::map<std::string, std::string>  headerFields;
         std::string                         ipAddress;
         Location                            *location;

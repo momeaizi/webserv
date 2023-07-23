@@ -8,7 +8,7 @@ std::string URLDecode(const std::string &url)
     {
         if (url[i] == '%')
         {
-            int hexValue = stoi(url.substr(i + 1, 2), nullptr, 16);
+            int hexValue = convertFromHex(url.substr(i + 1, 2));
             decoded += static_cast<char>(hexValue);
             i += 2;
         }

@@ -21,7 +21,7 @@ void        Server::openSocket()
             bind_address->ai_socktype, bind_address->ai_protocol);
 
     if (socket_listen < 0)
-        throw "socket() failed. " + std::to_string(errno);
+        throw "socket() failed. " + to_string(errno);
 
     int yes = 1;
     setsockopt(socket_listen, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
@@ -32,7 +32,7 @@ void        Server::openSocket()
     std::cerr << "Binding socket to local address..." << std::endl;
 
     if (bind(socket_listen, bind_address->ai_addr, bind_address->ai_addrlen))
-        throw "bind() failed. " + std::to_string(errno);
+        throw "bind() failed. " + to_string(errno);
 
     freeaddrinfo(bind_address);
 
@@ -51,7 +51,7 @@ void         Server::startListening()
     std::cerr << "Listening..." << std::endl;
 
     if (listen(socket_listen, 10) < 0)
-        throw "listen() failed. " + std::to_string(errno);
+        throw "listen() failed. " + to_string(errno);
 }
 
 
@@ -160,7 +160,7 @@ std::pair<std::string, Location*>    Server::getMatchedLocation(const std::strin
 void    Server::setHostName(std::vector<std::string> &tokens, unsigned int lineNumber)
 {
     if (tokens.size() != 2)
-        throw "invalid number of arguments in \"host\" directive in serv.conf:" + std::to_string(lineNumber);
+        throw "invalid number of arguments in \"host\" directive in serv.conf:" + to_string(lineNumber);
 
     hostName = tokens[1];
 }
@@ -168,7 +168,7 @@ void    Server::setHostName(std::vector<std::string> &tokens, unsigned int lineN
 void    Server::setPort(std::vector<std::string> &tokens, unsigned int lineNumber)
 {
     if (tokens.size() != 2)
-        throw "invalid number of arguments in \"port\" directive in serv.conf:" + std::to_string(lineNumber);
+        throw "invalid number of arguments in \"port\" directive in serv.conf:" + to_string(lineNumber);
 
     if (!containsOnlyDigits(tokens[1]))
         throw "invalid port number \"" + tokens[1] + "\"";
@@ -183,7 +183,7 @@ void        Server::setSocket(int socket_listen)
 void    Server::setClientMaxBodySize(std::vector<std::string> &tokens, unsigned int lineNumber)
 {
     if (tokens.size() != 2)
-        throw "invalid number of arguments in \"client_max_body_size\" directive in serv.conf:" + std::to_string(lineNumber);
+        throw "invalid number of arguments in \"client_max_body_size\" directive in serv.conf:" + to_string(lineNumber);
 
     if (!containsOnlyDigits(tokens[1]))
         throw "invalid client_max_body_size number \"" + tokens[1] + "\"";
@@ -193,7 +193,7 @@ void    Server::setClientMaxBodySize(std::vector<std::string> &tokens, unsigned 
 void    Server::setErrorPages(std::vector<std::string> &tokens, unsigned int lineNumber)
 {
     if (tokens.size() != 3)
-        throw "invalid number of arguments in \"error_page\" directive in serv.conf:" + std::to_string(lineNumber);
+        throw "invalid number of arguments in \"error_page\" directive in serv.conf:" + to_string(lineNumber);
 
     if (!containsOnlyDigits(tokens[1]))
         throw "invalid error code number \"" + tokens[1] + "\"";

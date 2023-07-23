@@ -52,7 +52,8 @@ void Client::upload()
         std::string extention = generateFileNameFromDate() + mimeTypes[this->headerFields["content-type"]];
         if (uploadFd == -1) // if is already opened in CGi
         {
-            uploadFd = open(std::string(this->location->getUpload() + "/" + extention).c_str(), O_RDWR  | O_CREAT/*| O_BINARY*/ ,0660);
+            uploadFileName = this->location->getUpload() + "/" + extention;
+            uploadFd = open(uploadFileName.c_str(), O_RDWR  | O_CREAT/*| O_BINARY*/ ,0660);
             if (uploadFd < 0)
             {
                 serve = NULL;
@@ -69,7 +70,7 @@ void Client::upload()
     size_t      max_body_size = static_cast<size_t>(server.getClientMaxBodySize());
     try
     {
-        ContentLength = stol(this->headerFields["content-length"]);
+        ContentLength = atol(this->headerFields["content-length"].c_str());
     }
     catch (...)
     {
@@ -144,7 +145,8 @@ void    Client::boundaryUpload()
             }
         }
         loc = name.find("\"");
-        uploadFd = open(std::string(this->location->getUpload() + "/" + name.substr(0, loc)).c_str(), O_WRONLY | O_CREAT , 0660);
+        uploadFileName = this->location->getUpload() + "/" + name.substr(0, loc);
+        uploadFd = open(uploadFileName.c_str(), O_WRONLY | O_CREAT , 0660);
         if (uploadFd < 0)
         {
             serve = NULL;
@@ -188,7 +190,7 @@ void Client::chunkedUpload()
                 str = this->buffer.substr(0, loc);
                 try
                 {
-                    this->chunked = std::stol(str, nullptr, 16);
+                    this->chunked = convertFromHex(str);
                 }
                 catch (...)
                 {
@@ -235,14 +237,14 @@ std::string  Client::generateFileNameFromDate()
 
     time_t now = time(NULL);
     tm *gmtm = gmtime(&now);
-    date  = std::to_string(gmtm->tm_mday) + "_";
-    date += std::to_string(gmtm->tm_mon + 1) + "_";
-    date += std::to_string(1900 + gmtm->tm_year) + "_";
-    date += std::to_string(gmtm->tm_hour + 5) + "_";
-    date += std::to_string(gmtm->tm_min + 30) + "_";
-    date += std::to_string(gmtm->tm_sec) + "_";
+    date  = to_string(gmtm->tm_mday) + "_";
+    date += to_string(gmtm->tm_mon + 1) + "_";
+    date += to_string(1900 + gmtm->tm_year) + "_";
+    date += to_string(gmtm->tm_hour + 5) + "_";
+    date += to_string(gmtm->tm_min + 30) + "_";
+    date += to_string(gmtm->tm_sec) + "_";
 	srand((unsigned) time(NULL));
-    date += std::to_string(rand());
+    date += to_string(rand());
 
     return date;
 }

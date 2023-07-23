@@ -28,6 +28,23 @@ std::string to_lower(const std::string &str)
     return lower_str;
 }
 
+std::string to_string(size_t n)
+{
+    std::stringstream ss;
+
+    ss << n;
+    return ss.str();
+}
+
+size_t  convertFromHex(const std::string &s)
+{
+    std::stringstream ss;
+    size_t  n;
+
+    ss << std::hex << s;
+    ss >> n;
+    return n;
+}
 
 std::list<std::string> getlines(std::string  &str)
 {              

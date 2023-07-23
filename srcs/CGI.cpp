@@ -1,6 +1,13 @@
 # include "../includes/Client.hpp"
 # include <string.h>
 
+void    unsetCgiENvVars(char **env)
+{
+    for (int i = 0; env[i]; ++i)
+        delete[] env[i];
+    delete[] env;
+}
+
 char    **Client::fillCgiEnvVars()
 {
     std::set<std::string>   cgi_env;
@@ -39,13 +46,13 @@ char    **creatArgv(std::string extention, std::string path)
 {
         char    **argv = new char*[3];
 
-        argv[0] = new char[4];
-        memcpy(argv[0], extention.data(), 3);
-        argv[0][3] = '\0';
+        argv[0] = new char[extention.length() + 1];
+        memcpy(argv[0], extention.c_str(), extention.length());
+        argv[0][extention.length()] = '\0';
 
-        argv[1] = new char[42];
-        memcpy(argv[1], path.data(), 41);
-        argv[1][41] = '\0';
+        argv[1] = new char[path.length() + 1];
+        memcpy(argv[1], path.c_str(), path.length());
+        argv[1][path.length()] = '\0';
 
         argv[2] = NULL;
         return argv;
@@ -53,7 +60,6 @@ char    **creatArgv(std::string extention, std::string path)
 
 void Client::serveCGI()
 {
-    char        **env = fillCgiEnvVars();
     size_t len = resource.find_last_of(".");
     std::string extention;
     std::string __file;
@@ -62,34 +68,39 @@ void Client::serveCGI()
     {
         extention = resource.substr(len + 1);
         __file = location->getCgiVal(extention);
-        if (__file.empty()) return setHeader(400); //! change status code
+        if (__file.empty()) return setHeader(200); //! change status code
     }
     else
         return setHeader(200);
+
 
     std::string filename = "/tmp/" + generateFileNameFromDate();
 
     childPID = fork();
     if (!childPID)
     {
-        std::string __file = location->getCgiVal(extention);
 
         uploadFd = open(std::string(filename + "_in").c_str(), O_RDWR | O_CREAT, 0777);
         cgi_fd = open(std::string(filename + "out").c_str(), O_RDWR | O_CREAT, 0777);
 
         if (cgi_fd < 0 || uploadFd < 0)
-            exit(4);
+            exit(500);
+    
         dup2(uploadFd, 0);
         dup2(cgi_fd, 1);
         
         close(uploadFd);
         close(cgi_fd);
 
-        if (__file.empty()) return setHeader(400); //! change status code
-        if (execve(__file.data(), creatArgv(extention, resource), env) < 0)
+        char        **env = fillCgiEnvVars();
+        char        **args = creatArgv(extention, resource);
+
+        if (execve(__file.c_str(), args, env) < 0)
             std::cerr << "execve failed!" << std::endl;
 
-        exit(1);
+        unsetCgiENvVars(env);
+        exit(500);
+
     }
     else if (childPID < 0)
     {
@@ -121,7 +132,7 @@ void    Client::passRequestBodyAndWait()
         // int exitStatus = WEXITSTATUS(status);
         int exitStatus = 200;
 
-        response = "HTTP/1.1 " + std::to_string(exitStatus) + " " + statusCodes[exitStatus] + "\r\n"; // change exitSatus by the satus header
+        response = "HTTP/1.1 " + to_string(exitStatus) + " " + statusCodes[exitStatus] + "\r\n"; // change exitSatus by the satus header
         serve = &Client::receiveCGIOuput;
     }
 }
