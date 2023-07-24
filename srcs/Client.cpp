@@ -145,7 +145,7 @@ void Client::serveStaticFIle()
 
     if (uploadFd == -1)
     {
-        uploadFd = open(resource.c_str(), O_RDONLY /*| O_BINARY*/);
+        uploadFd = open(resource.c_str(), O_RDONLY);
         if (uploadFd < 0)
         {
             serve = NULL;

@@ -30,29 +30,23 @@ char    **Client::fillCgiEnvVars()
 
     char    **env = new char*[cgi_env.size() + 1];
 
-    std::set<std::string>::iterator it = cgi_env.begin();
 
+    std::set<std::string>::iterator it = cgi_env.begin();
     for (size_t i = 0; i < cgi_env.size(); ++i, ++it)
-    {
-        env[i] = new char[it->length() + 1];
-        memcpy(env[i], it->c_str(), it->length() + 1);
-    }
+        env[i] = strdup(it->c_str());
+
     env[cgi_env.size()] = NULL;
 
     return env;
 }
 
-char    **creatArgv(std::string extention, std::string path)
+char    **fillArgs(const std::string &ext, const std::string &path)
 {
         char    **argv = new char*[3];
 
-        argv[0] = new char[extention.length() + 1];
-        memcpy(argv[0], extention.c_str(), extention.length());
-        argv[0][extention.length()] = '\0';
+        argv[0] = strdup(ext.c_str());
 
-        argv[1] = new char[path.length() + 1];
-        memcpy(argv[1], path.c_str(), path.length());
-        argv[1][path.length()] = '\0';
+        argv[1] = strdup(path.c_str());
 
         argv[2] = NULL;
         return argv;
@@ -60,33 +54,35 @@ char    **creatArgv(std::string extention, std::string path)
 
 void Client::serveCGI()
 {
-    size_t len = resource.find_last_of(".");
-    std::string extention;
-    std::string __file;
+    size_t          pos = resource.find_last_of(".");
+    std::string     ext;
+    std::string     cgi_bin;
+    std::string     filename = "/tmp/" + generateFileNameFromDate();
 
-    if (len != std::string::npos)
+    if (pos != std::string::npos)
     {
-        extention = resource.substr(len + 1);
-        __file = location->getCgiVal(extention);
-        if (__file.empty()) return setHeader(200); //! change status code
+        ext = resource.substr(pos + 1);
+        cgi_bin = location->getCgiBin(ext);
+
+        if (cgi_bin.empty())
+            return setHeader(200);
     }
     else
         return setHeader(200);
 
-
-    std::string filename = "/tmp/" + generateFileNameFromDate();
+    std::cout << filename + "_in" << std::endl;
 
     childPID = fork();
     if (!childPID)
     {
         char        **env = fillCgiEnvVars();
-        char        **args = creatArgv(extention, resource);
+        char        **args = fillArgs(ext, resource);
 
         uploadFd = open(std::string(filename + "_in").c_str(), O_RDWR | O_CREAT, 0777);
-        cgi_fd = open(std::string(filename + "out").c_str(), O_RDWR | O_CREAT, 0777);
+        cgi_fd = open(std::string(filename + "_out").c_str(), O_RDWR | O_CREAT, 0777);
 
         if (cgi_fd < 0 || uploadFd < 0)
-            exit(500);
+            exit(1);
     
         dup2(uploadFd, 0);
         dup2(cgi_fd, 1);
@@ -96,10 +92,10 @@ void Client::serveCGI()
 
 
 
-        if (execve(__file.c_str(), args, env) < 0)
+        if (execve(cgi_bin.c_str(), args, env) < 0)
             std::cerr << "execve failed!" << std::endl;
 
-        exit(500);
+        exit(1);
 
     }
     else if (childPID < 0)
@@ -109,8 +105,9 @@ void Client::serveCGI()
         return ;
     }
 
-    uploadFd = open(std::string(filename + "in").c_str(), O_RDWR | O_CREAT, 0777);
-    cgi_fd = open(std::string(filename + "out").c_str(), O_RDWR | O_CREAT, 0777);
+    uploadFd = open(std::string(filename + "_in").c_str(), O_RDWR | O_CREAT, 0777);
+    cgi_fd = open(std::string(filename + "_out").c_str(), O_RDWR | O_CREAT, 0777);
+
     if (cgi_fd < 0 || uploadFd < 0)
     {
         serve = NULL;
@@ -129,10 +126,16 @@ void    Client::passRequestBodyAndWait()
     waitpid(childPID, &status, WNOHANG);
     if (WIFEXITED(status))
     {
-        // int exitStatus = WEXITSTATUS(status);
-        int exitStatus = 200;
+        int exitStatus = WEXITSTATUS(status);
 
-        response = "HTTP/1.1 " + to_string(exitStatus) + " " + statusCodes[exitStatus] + "\r\n"; // change exitSatus by the satus header
+        if (exitStatus)
+        {
+            close(uploadFd);
+            uploadFd = -1;
+            return setHeader(500);
+        }
+
+        response = "HTTP/1.1 200 OK\r\n";
         serve = &Client::receiveCGIOuput;
     }
 }
@@ -140,7 +143,12 @@ void    Client::passRequestBodyAndWait()
 void Client::receiveCGIOuput()
 {
     char    buff[CHUNK_SIZE];
-    int  bytesRead = read(cgi_fd, buff, CHUNK_SIZE);
+    int     bytesRead = read(cgi_fd, buff, CHUNK_SIZE);
+
+    std::cout << bytesRead << std::endl;
+
+    if (methodType == "POST")
+        upload();
 
     if (bytesRead <= 0)
     {

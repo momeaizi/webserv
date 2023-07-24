@@ -21,7 +21,10 @@ void        Server::openSocket()
             bind_address->ai_socktype, bind_address->ai_protocol);
 
     if (socket_listen < 0)
+    {
+        freeaddrinfo(bind_address);
         throw "socket() failed. " + to_string(errno);
+    }
 
     int yes = 1;
     setsockopt(socket_listen, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
@@ -32,14 +35,17 @@ void        Server::openSocket()
     std::cerr << "Binding socket to local address..." << std::endl;
 
     if (bind(socket_listen, bind_address->ai_addr, bind_address->ai_addrlen))
+    {
+        freeaddrinfo(bind_address);
         throw "bind() failed. " + to_string(errno);
-
-    freeaddrinfo(bind_address);
+    }
 
     FD_SET(socket_listen, &readMaster);
 
     if (socket_listen > maxFds)
         maxFds = socket_listen;
+
+    freeaddrinfo(bind_address);
 }
 
 

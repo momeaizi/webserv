@@ -3,11 +3,11 @@
 
 std::vector<std::string>  listOfCurrentContent(std::string path)
 {
-    DIR *dir = opendir(path.data());
-    dirent  *entry;
-    std::vector<std::string> currentContent;
+    DIR                         *dir = opendir(path.data());
+    dirent                      *entry;
+    std::vector<std::string>    currentContent;
 
-    while ((entry = readdir(dir)) != NULL)
+    while ((entry = readdir(dir)))
     {
         std::string filepath(path + "/" + std::string(entry->d_name));
 
@@ -21,23 +21,28 @@ std::vector<std::string>  listOfCurrentContent(std::string path)
 
 void StringOfCurrentContent(const std::string &path, const std::string &filename, const std::string &uri)
 {
-    std::string response = "<!DOCTYPE html><html><body><h1>Index of " + uri + "</h1> <hr><ul>";
-    std::vector<std::string> currentContent = listOfCurrentContent(path);
-    std::ofstream HTMLFILE(filename.c_str());
+    std::string                 autoindex_content = "<!DOCTYPE html><html><body><h1>Index of " + uri + "</h1> <hr><ul>";
+    std::vector<std::string>    currentContent = listOfCurrentContent(path);
+    std::ofstream               autoindex_file(filename.c_str());
 
-    HTMLFILE << response;
+    autoindex_file << autoindex_content;
+
     for(size_t i = 0; i < currentContent.size(); i++)
     {
-        if (currentContent[i] == "./") continue;
-        response = "<li><a href=\"" + uri + currentContent[i] +"\">";
-        if (currentContent[i].size() > 50)
-            response += currentContent[i].substr(49) + "..>";
-        else
-            response += currentContent[i];
-        response += "</a> <l/i>\n";
+        if (currentContent[i] == "./")
+            continue;
 
-        HTMLFILE << response;
+        autoindex_content = "<li><a href=\"" + uri + currentContent[i] +"\">";
+
+        if (currentContent[i].size() > 50)
+            autoindex_content += currentContent[i].substr(49) + "..>";
+        else
+            autoindex_content += currentContent[i];
+        autoindex_content += "</a> <l/i>\n";
+
+        autoindex_file << autoindex_content;
     }
-    response += "</ul><hr> </body>";
-    HTMLFILE.close();
+    autoindex_content += "</ul><hr> </body>";
+
+    autoindex_file.close();
 }

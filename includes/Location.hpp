@@ -45,7 +45,7 @@ struct   Location
         const std::string                           &getUpload() const;
         const std::pair<int, std::string>           &getRedirection() const;
         const std::map<std::string, std::string>    &getCgi() const;
-        const std::string                           &getCgiVal(std::string key);
+        const std::string                           &getCgiBin(std::string key);
         const std::set<std::string>                 &getAllowedMethods() const;
 
 };

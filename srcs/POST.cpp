@@ -53,7 +53,7 @@ void Client::upload()
         if (uploadFd == -1) // if is already opened in CGi
         {
             uploadFileName = this->location->getUpload() + "/" + extention;
-            uploadFd = open(uploadFileName.c_str(), O_RDWR  | O_CREAT/*| O_BINARY*/ ,0660);
+            uploadFd = open(uploadFileName.c_str(), O_RDWR  | O_CREAT ,0660);
             if (uploadFd < 0)
             {
                 serve = NULL;
@@ -65,9 +65,9 @@ void Client::upload()
         return chunkedUpload();
 
 
-    std::string str;
-    size_t      ContentLength;
-    size_t      max_body_size = static_cast<size_t>(server.getClientMaxBodySize());
+    std::string     str;
+    size_t          ContentLength;
+    size_t          max_body_size = static_cast<size_t>(server.getClientMaxBodySize());
     try
     {
         ContentLength = atol(this->headerFields["content-length"].c_str());
@@ -77,8 +77,11 @@ void Client::upload()
         serve = NULL;
         return ;
     }
+
+
     if (server.getClientMaxBodySize() != -1 && ContentLength > max_body_size)
     {
+        remove(uploadFileName.c_str());
         close(uploadFd);
         uploadFd = -1;
         return setHeader(413);
@@ -222,9 +225,15 @@ void Client::chunkedUpload()
             str = this->buffer.substr(0, this->chunked);
         if (write(uploadFd, str.data(), str.length()) < 0)
             serve = NULL;
+
+
         loc = str.size();
-        if (buffer.size() > this->chunked) loc += 2;
-        if (buffer.size() < loc) loc = buffer.size();
+        if (buffer.size() > this->chunked)
+            loc += 2;
+        if (buffer.size() < loc)
+            loc = buffer.size();
+    
+    
         this->buffer = this->buffer.substr(loc);
         this->chunked -= str.size();
         this->bytesUploaded += str.size();

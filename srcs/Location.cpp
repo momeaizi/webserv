@@ -108,7 +108,7 @@ const std::map<std::string, std::string>    &Location::getCgi() const
 	return cgi;
 }
 
-const std::string   &Location::getCgiVal(std::string key)
+const std::string   &Location::getCgiBin(std::string key)
 {
 	return cgi[key];
 }
