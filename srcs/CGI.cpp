@@ -78,8 +78,8 @@ void Client::serveCGI()
         char        **env = fillCgiEnvVars();
         char        **args = fillArgs(ext, resource);
 
-        uploadFd = open(std::string(filename + "_in").c_str(), O_RDWR | O_CREAT, 0777);
-        cgi_fd = open(std::string(filename + "_out").c_str(), O_RDWR | O_CREAT, 0777);
+        uploadFd = open(std::string(filename + "_in").c_str(), O_RDWR | O_CREAT, 0660);
+        cgi_fd = open(std::string(filename + "_out").c_str(), O_RDWR | O_CREAT, 0660);
 
         if (cgi_fd < 0 || uploadFd < 0)
             exit(1);
@@ -105,8 +105,8 @@ void Client::serveCGI()
         return ;
     }
 
-    uploadFd = open(std::string(filename + "_in").c_str(), O_RDWR | O_CREAT, 0777);
-    cgi_fd = open(std::string(filename + "_out").c_str(), O_RDWR | O_CREAT, 0777);
+    uploadFd = open(std::string(filename + "_in").c_str(), O_RDWR | O_CREAT, 0660);
+    cgi_fd = open(std::string(filename + "_out").c_str(), O_RDWR | O_CREAT, 0660);
 
     if (cgi_fd < 0 || uploadFd < 0)
     {
@@ -146,9 +146,6 @@ void Client::receiveCGIOuput()
     int     bytesRead = read(cgi_fd, buff, CHUNK_SIZE);
 
     std::cout << bytesRead << std::endl;
-
-    if (methodType == "POST")
-        upload();
 
     if (bytesRead <= 0)
     {

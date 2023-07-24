@@ -25,6 +25,7 @@ void Client::PostHandler()
             setHeader(301);
             return ;
         }
+
         std::string filePath = resource;
         if (hasIndex(location->getIndex()))
             filePath += location->getIndex();
@@ -90,7 +91,7 @@ void Client::upload()
     {
         close(uploadFd);
         uploadFd = -1;
-        if (serve != &Client::passRequestBodyAndWait)
+        if (serve == &Client::upload)
             setHeader(201);
         return ;
     }
@@ -210,7 +211,7 @@ void Client::chunkedUpload()
                 {
                     close(uploadFd);
                     uploadFd = -1;
-                    if (serve != &Client::passRequestBodyAndWait)
+                    if (serve == &Client::upload)
                         setHeader(201);
                     return ;
                 }
