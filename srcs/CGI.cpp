@@ -1,31 +1,31 @@
 # include "../includes/Client.hpp"
 # include <string.h>
 
-void    unsetCgiENvVars(char **env)
-{
-    for (int i = 0; env[i]; ++i)
-        delete[] env[i];
-    delete[] env;
-}
 
 char    **Client::fillCgiEnvVars()
 {
     std::set<std::string>   cgi_env;
 
-    cgi_env.insert(std::string("REQUEST_METHOD") + "=" + methodType);
-    if (!querieString.empty())
-        cgi_env.insert(std::string("QUERY_STRING") + "=" + querieString);
+    cgi_env.insert(std::string("REQUEST_METHOD=") + methodType);
+    cgi_env.insert(std::string("QUERY_STRING=") + querieString);
     if (!headerFields["content-type"].empty())
-        cgi_env.insert(std::string("CONTENT_TYPE") + "=" + headerFields["content-type"]);
+        cgi_env.insert(std::string("CONTENT_TYPE=") + headerFields["content-type"]);
     if (!headerFields["content-length"].empty())
-        cgi_env.insert(std::string("CONTENT_LENGTH") + "=" + headerFields["content-length"]);
+        cgi_env.insert(std::string("CONTENT_LENGTH=") + headerFields["content-length"]);
     if (!headerFields["cookie"].empty())
-        cgi_env.insert(std::string("HTTP_COOKIE") + "=" + headerFields["cookie"]);
+        cgi_env.insert(std::string("HTTP_COOKIE=") + headerFields["cookie"]);
     if (!headerFields["user-agent"].empty())
-        cgi_env.insert(std::string("HTTP_USER_AGENT") + "=" + headerFields["user-agent"]);
-    cgi_env.insert(std::string("REMOTE_ADDR") + "=" + ipAddress);
-    cgi_env.insert(std::string("SERVER_NAME") + "=" + server.getHostName());
-    cgi_env.insert(std::string("SERVER_PORT") + "=" + server.getPort());
+        cgi_env.insert(std::string("HTTP_USER_AGENT=") + headerFields["user-agent"]);
+    cgi_env.insert(std::string("REMOTE_ADDR=") + ipAddress);
+    cgi_env.insert(std::string("SERVER_NAME=") + server.getHostName());
+    cgi_env.insert(std::string("SERVER_PORT=") + server.getPort());
+    cgi_env.insert(std::string("PATH_INFO=" + resource));
+    cgi_env.insert(std::string("SCRIPT_FILENAME=" + resource));
+    cgi_env.insert(std::string("SCRIPT_NAME="+ resource));
+    cgi_env.insert("REDIRECT_STATUS=200");
+    cgi_env.insert("SERVER_PROTOCOL=HTTP/1.1");
+    cgi_env.insert("GATEWAY_INTERFACE=CGI/1.1");
+
 
 
     char    **env = new char*[cgi_env.size() + 1];
@@ -79,6 +79,8 @@ void Client::serveCGI()
     childPID = fork();
     if (!childPID)
     {
+        char        **env = fillCgiEnvVars();
+        char        **args = creatArgv(extention, resource);
 
         uploadFd = open(std::string(filename + "_in").c_str(), O_RDWR | O_CREAT, 0777);
         cgi_fd = open(std::string(filename + "out").c_str(), O_RDWR | O_CREAT, 0777);
@@ -92,13 +94,11 @@ void Client::serveCGI()
         close(uploadFd);
         close(cgi_fd);
 
-        char        **env = fillCgiEnvVars();
-        char        **args = creatArgv(extention, resource);
+
 
         if (execve(__file.c_str(), args, env) < 0)
             std::cerr << "execve failed!" << std::endl;
 
-        unsetCgiENvVars(env);
         exit(500);
 
     }
