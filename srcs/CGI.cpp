@@ -70,8 +70,6 @@ void Client::serveCGI()
     else
         return setHeader(200);
 
-    std::cout << filename + "_in" << std::endl;
-
     childPID = fork();
     if (!childPID)
     {
@@ -144,8 +142,6 @@ void Client::receiveCGIOuput()
 {
     char    buff[CHUNK_SIZE];
     int     bytesRead = read(cgi_fd, buff, CHUNK_SIZE);
-
-    std::cout << bytesRead << std::endl;
 
     if (bytesRead <= 0)
     {

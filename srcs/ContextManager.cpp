@@ -42,8 +42,6 @@ void    ContextManager::ioMultiplexer()
 			if (FD_ISSET(servers[i].getSocket(), &reads))
 			{
 				servers[i].acceptClient(clients);
-				std::cout << "socket : " << clients.back().getClSocket() << std::endl;
-				std::cout << "maxFds : " << maxFds << std::endl;
 			}
 		}
 
