@@ -16,7 +16,7 @@ void    Client::GetHandler()
         }
         std::string filePath = resource;
         if(hasIndex(location->getIndex()))
-                filePath = location->getIndex();
+                filePath += location->getIndex();
         if (!ft::isFile(filePath))
         {
             if (location->getAutoindex())
