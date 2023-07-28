@@ -186,6 +186,10 @@ void    Client::clear()
 {
     bytesUploaded = 0;
     resourceSize = 0;
+    if (childPID > 0)
+    {
+        kill(childPID, SIGKILL);
+    }
     if (uploadFd != -1)
     {
         close(uploadFd);
@@ -201,18 +205,19 @@ void    Client::clear()
     resource.clear();
     headerFields.clear();
     location = NULL;
+    childPID = 0;
     serve = &Client::parse;
 }
 
 
 Client::Client(int clSocket, Server &server, const std::string &ipAddress) : 
-                clSocket(clSocket),  chunked(0), server(server), bytesUploaded(0), 
+                childPID(0), clSocket(clSocket),  chunked(0), server(server), bytesUploaded(0), 
                     resourceSize(0), cgi_fd(-1), uploadFd(-1), methodType(""), resource(""),
                         ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)), serve(&Client::parse)
 {
     fcntl(clSocket, F_SETFL, O_NONBLOCK);
-    int set = 1;
-    setsockopt(clSocket, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int)); 
+    // int set = 1;
+    // setsockopt(clSocket, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int)); 
 }
 
 

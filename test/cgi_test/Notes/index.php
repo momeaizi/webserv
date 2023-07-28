@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -11,7 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Add the new note to the user's list of notes
-        $_SESSION['notes'][] = $note;
+        if (strlen($note))
+            $_SESSION['notes'][] = $note;
 
     }
 }

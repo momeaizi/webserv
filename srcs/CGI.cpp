@@ -124,6 +124,7 @@ void    Client::passRequestBodyAndWait()
     waitpid(childPID, &status, WNOHANG);
     if (WIFEXITED(status))
     {
+        childPID = 0;
         int exitStatus = WEXITSTATUS(status);
 
         if (exitStatus)

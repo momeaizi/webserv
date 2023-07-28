@@ -83,7 +83,11 @@ void    ContextManager::ioMultiplexer()
 				
 			}
 
-			if (!client.serve || time(NULL) - client.lastActivity > TIMEOUT)
+			if (time(NULL) - client.lastActivity > TIMEOUT)
+			{
+				DROPCLIENT;
+			}
+			else if (!client.serve)
 			{
 				if (client.headerFields.count("connection") and client.headerFields["connection"] == "Keep-Alive")
 					client.clear();
