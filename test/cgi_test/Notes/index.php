@@ -32,7 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h2>Your Notes:</h2>
     <p>
         <?php
-            session_start();
 
             if (isset($_SESSION['notes']) && count($_SESSION['notes']) > 0) {
                 foreach ($_SESSION['notes'] as $note) {

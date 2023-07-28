@@ -69,6 +69,7 @@ void Client::upload()
     std::string     str;
     size_t          ContentLength;
     size_t          max_body_size = static_cast<size_t>(server.getClientMaxBodySize());
+
     try
     {
         ContentLength = atol(this->headerFields["content-length"].c_str());
@@ -100,7 +101,7 @@ void Client::upload()
     else
         str = buffer.substr(0, ContentLength - bytesUploaded);
 
-    if (write(uploadFd, str.data(), str.length()) <= 0)
+    if (write(uploadFd, str.data(), str.length()) < 0)
         serve = NULL;
 
     buffer = buffer.substr(str.length());

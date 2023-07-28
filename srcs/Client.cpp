@@ -88,7 +88,7 @@ void Client::setHeader(int statusCode)
             resource = "errorPages/" + to_string(statusCode) + ".html";
     }
 
-    if (ft::isFile(resource.data()))
+    if (ft::isFile(resource.c_str()))
     {
         std::string key;
         size_t      found = resource.find_last_of('.');

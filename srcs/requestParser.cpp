@@ -78,10 +78,15 @@ void Client::parse()
 
         if (str.empty())
         {
+
             if (methodType == "GET")
                 this->serve = &Client::GetHandler;
             else if (methodType == "POST")
+            {
+                if (!headerFields.count("content-length") && headerFields["transfer-encoding"] != "chunked")
+                    return setHeader(400);
                 this->serve = &Client::PostHandler;
+            }
             else
                 this->serve = &Client::DeleteHandler;
 
@@ -141,7 +146,7 @@ void Client::parse()
                 return ;
             }
             std::string   val = str.substr(index + 1, len);
-            headerFields [name] = trimString(val);
+            headerFields[name] = trimString(val);
         }
     }
 }
