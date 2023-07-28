@@ -23,17 +23,18 @@ void    ContextManager::openAndListen()
 
 void    ContextManager::ioMultiplexer()
 {
-	fd_set	reads;
-	fd_set	writes;
-	int		bytes;
+	fd_set			reads;
+	fd_set			writes;
+	int				bytes;
+	int				maxFd;
 
 	while (26)
 	{
 		reads = readMaster;
 		writes = writeMaster;
 
-
-		if (select(maxFds + 1, &reads, &writes, 0, 0) < 0)
+		maxFd = *(--fds.end()) + 1;
+		if (select(maxFd, &reads, &writes, 0, 0) < 0)
 			throw "select() failed. " + to_string(errno);
 
 
@@ -47,10 +48,9 @@ void    ContextManager::ioMultiplexer()
 
 		for (std::list<Client>::iterator it = clients.begin(); it != clients.end();)
 		{
+
 			Client	&client = *it;
 
-
-			(client.*client.serve)();
 			if (FD_ISSET(client.getClSocket(), &reads))
 			{
 
@@ -96,6 +96,7 @@ void    ContextManager::ioMultiplexer()
 					DROPCLIENT;
 				}
 			}
+			(client.*client.serve)();
 			++it;
 		}
 	}

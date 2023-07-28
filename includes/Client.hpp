@@ -20,15 +20,16 @@
 # include <sys/socket.h>
 # include <sys/types.h>
 # include <sys/wait.h>
+# include <signal.h>
 
 # define MAX 2048
 # define CHUNK_SIZE 2048
 # define BUFFER_SIZE 2048
 # define ALLOWED_CHAR_IN_URI     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~!$&'()*+,;=:@/?#[]%"
 
-extern fd_set  readMaster;
-extern fd_set  writeMaster;
-extern int     maxFds;
+extern fd_set           readMaster;
+extern fd_set           writeMaster;
+extern std::set<int>    fds;
 extern std::map<int, std::string>          statusCodes;
 extern std::map<std::string, std::string>  mimeTypes;
 

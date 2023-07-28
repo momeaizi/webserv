@@ -42,8 +42,8 @@ void        Server::openSocket()
 
     FD_SET(socket_listen, &readMaster);
 
-    if (socket_listen > maxFds)
-        maxFds = socket_listen;
+
+    fds.insert(socket_listen);
 
     freeaddrinfo(bind_address);
 }
@@ -56,7 +56,7 @@ void         Server::startListening()
 {
     std::cerr << "Listening..." << std::endl;
 
-    if (listen(socket_listen, 10) < 0)
+    if (listen(socket_listen, 26) < 0)
         throw "listen() failed. " + to_string(errno);
 }
 
@@ -81,8 +81,8 @@ int         Server::acceptClient(std::list<Client> &clients)
     FD_SET(socket_client, &readMaster);
     FD_SET(socket_client, &writeMaster);
 
-    if (socket_client > maxFds)
-        maxFds = socket_client;
+
+    fds.insert(socket_client);
 
     return 0;
 }

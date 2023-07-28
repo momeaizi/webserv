@@ -176,8 +176,8 @@ void Client::serveStaticFIle()
 
 void    Client::drop()
 {
-    clear();
     close(clSocket);
+    clear();
     FD_CLR(clSocket, &readMaster);
     FD_CLR(clSocket, &writeMaster);
 }
@@ -216,8 +216,8 @@ Client::Client(int clSocket, Server &server, const std::string &ipAddress) :
                         ipAddress(ipAddress), location(NULL), lastActivity(time(NULL)), serve(&Client::parse)
 {
     fcntl(clSocket, F_SETFL, O_NONBLOCK);
-    // int set = 1;
-    // setsockopt(clSocket, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int)); 
+    int set = 1;
+    setsockopt(clSocket, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int)); 
 }
 
 

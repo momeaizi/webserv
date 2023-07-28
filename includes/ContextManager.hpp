@@ -13,13 +13,14 @@
 #include "string.hpp"
 
 #define TIMEOUT 60
-#define DROPCLIENT  client.drop();\
+#define DROPCLIENT  fds.erase(client.getClSocket()); \
+                    client.drop();\
                     clients.erase(it++);\
                     continue ;\
 
-extern fd_set  readMaster;
-extern fd_set  writeMaster;
-extern int     maxFds;
+extern fd_set           readMaster;
+extern fd_set           writeMaster;
+extern std::set<int>	fds;
 
 class   ContextManager
 {
