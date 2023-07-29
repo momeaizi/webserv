@@ -25,7 +25,7 @@ if name:
     print("<h1>Hello, {}!</h1>".format(name))
 else:
     print("<h1>Please enter your name.</h1>")
-print('<form method="GET" action="py.py">')
+print('<form method="GET" action="index.py">')
 print('Name: <input type="text" name="name">')
 print('<input type="submit" value="Submit">')
 print('</form>')

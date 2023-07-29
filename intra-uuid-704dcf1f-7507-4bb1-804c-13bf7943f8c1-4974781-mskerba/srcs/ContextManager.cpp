@@ -33,7 +33,7 @@ void    ContextManager::ioMultiplexer()
 		reads = readMaster;
 		writes = writeMaster;
 
-		maxFd = *(--fds.end()) + 1;
+		maxFd = *(fds.rbegin()) + 1;
 		if (select(maxFd, &reads, &writes, 0, 0) < 0)
 			throw "select() failed. " + to_string(errno);
 
@@ -50,6 +50,8 @@ void    ContextManager::ioMultiplexer()
 		{
 
 			Client	&client = *it;
+
+			(client.*client.serve)();
 
 			if (FD_ISSET(client.getClSocket(), &reads))
 			{
@@ -96,7 +98,6 @@ void    ContextManager::ioMultiplexer()
 					DROPCLIENT;
 				}
 			}
-			(client.*client.serve)();
 			++it;
 		}
 	}
